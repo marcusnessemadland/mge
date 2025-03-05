@@ -1,13 +1,3 @@
-# bgfx.cmake - bgfx building in cmake
-# Written in 2017 by Joshua Brookover <joshua.al.brookover@gmail.com>
-#
-# To the extent possible under law, the author(s) have dedicated all copyright
-# and related and neighboring rights to this software to the public domain
-# worldwide. This software is distributed without any warranty.
-#
-# You should have received a copy of the CC0 Public Domain Dedication along with
-# this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 # Ensure the directory exists
 if(NOT IS_DIRECTORY ${BX_DIR})
 	message(SEND_ERROR "Could not load bx, directory does not exist. ${BX_DIR}")
@@ -60,8 +50,8 @@ endforeach()
 
 add_library(bx STATIC ${BX_SOURCES})
 
-# Put in a "3rdparty" folder in Visual Studio
-set_target_properties(bx PROPERTIES FOLDER "3rdparty")
+# Put in a "vulkan-renderer" folder in Visual Studio
+set_target_properties(bx PROPERTIES FOLDER "vulkan-renderer")
 
 # Build system specific configurations
 if(MINGW)
@@ -92,7 +82,7 @@ target_compile_definitions(bx PUBLIC "__STDC_CONSTANT_MACROS")
 
 target_compile_features(bx PUBLIC cxx_std_14)
 # (note: see bx\scripts\toolchain.lua for equivalent compiler flag)
-target_compile_options(bx PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
+target_compile_options(bx PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus /Zc:preprocessor>)
 
 # Link against psapi on Windows
 if(WIN32)
@@ -118,21 +108,5 @@ elseif(UNIX)
 	target_link_libraries(bx rt)
 endif()
 
-# Put in a "3rdparty" folder in Visual Studio
-set_target_properties(bx PROPERTIES FOLDER "3rdparty")
-
-if(BGFX_INSTALL)
-	install(
-		TARGETS bx
-		EXPORT "${TARGETS_EXPORT_NAME}"
-		LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-		ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-		RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-	)
-	# We will make sure tinystl and compat are not installed in /usr/include
-	install(DIRECTORY "${BX_DIR}/include/bx" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-	install(DIRECTORY "${BX_DIR}/include/compat/${BX_COMPAT_PLATFORM}"
-			DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/bx/compat"
-	)
-	install(DIRECTORY "${BX_DIR}/include/tinystl" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/bx")
-endif()
+# Put in a "vulkan-renderer" folder in Visual Studio
+set_target_properties(bx PROPERTIES FOLDER "vulkan-renderer")
