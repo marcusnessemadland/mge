@@ -1,5 +1,6 @@
-#include "../Common/Init.h"
-#include "Main.h"
+#include "../Init.h"
+#include "../Main.h"
+
 #include <stdio.h>
 
 INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,

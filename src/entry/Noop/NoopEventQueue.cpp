@@ -1,6 +1,6 @@
 #include "NoopEventQueue.h"
 
-namespace xwin
+namespace vr
 {
   EventQueue::EventQueue()
   {

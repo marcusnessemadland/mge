@@ -1,24 +1,24 @@
 #pragma once
 
-#include "../Common/Event.h"
+#include "../Event.h"
 
-namespace xwin
+namespace vr
 {
-  class EventQueue
-  {
-    public:
-    EventQueue();
+	class EventQueue
+	{
+	public:
+		EventQueue();
 
-    void update();
+		void update();
 
-    const Event& front();
+		const Event& front();
 
-    void pop();
+		void pop();
 
-	bool empty();
+		bool empty();
 
-    protected:
-    Event e = Event(EventType::EventTypeMax, nullptr);
-  };
+	protected:
+		Event e = Event(EventType::EventTypeMax, nullptr);
+	};
 
 }

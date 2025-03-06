@@ -1,6 +1,6 @@
 #include "NoopWindow.h"
 
-namespace xwin
+namespace vr
 {
 Window::~Window() { close(); }
 

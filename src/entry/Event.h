@@ -2,16 +2,19 @@
 
 #include <stddef.h>
 
+
+namespace vr
+{
+class Window;
+
 /**
  * Events in CrossWindow are heavily influenced by:
  * - winit by Pierre Krieger <https://github.com/tomaka/winit>
  * - W3's DOM Events
  * <https://dvcs.w3.org/hg/dom3events/raw-file/tip/html/DOM3-Events.html>
  */
-namespace vr
-{
-class Window;
 
+//
 enum class EventType : size_t
 {
     None = 0,

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../Common/EventQueue.h"
-#include "../Common/Init.h"
-#include "../Common/WindowDesc.h"
+#include "../EventQueue.h"
+#include "../Init.h"
+#include "../WindowDesc.h"
 
-namespace xwin
+namespace vr
 {
 class Window;
 

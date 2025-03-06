@@ -26,10 +26,26 @@ namespace vr
 		return window;
 	}
 
-	std::shared_ptr<EventQueue> createEventQueue(const std::shared_ptr<Window> _window)
+	std::shared_ptr<EventQueue> createEventQueue(std::shared_ptr<Window>& _window)
 	{
 		std::shared_ptr<EventQueue> event = std::make_shared<EventQueue>();
 		_window->setEventQueue(event.get());
 		return event;
+	}
+	std::shared_ptr<Framebuffer> createFramebuffer(std::shared_ptr<Window>& _window)
+	{
+		std::shared_ptr<Framebuffer> framebuffer = std::make_shared<Framebuffer>();
+		return framebuffer;
+	}
+	std::shared_ptr<World> createWorld()
+	{
+		std::shared_ptr<World> world = std::make_shared<World>();
+		return world;
+	}
+
+	std::shared_ptr<Camera> createCamera(std::shared_ptr<World>& _world, Projection::Enum _projection)
+	{
+		std::shared_ptr<Camera> camera = std::make_shared<Camera>();
+		return camera;
 	}
 }

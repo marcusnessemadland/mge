@@ -90,19 +90,42 @@ message( STATUS "Building Vulkan Renderer for " ${VR_API_PATH} )
 # =============================================================
 
 # Sources
-
 file(GLOB_RECURSE FILE_SOURCES RELATIVE
     ${CMAKE_CURRENT_SOURCE_DIR}
+
+    #
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan-renderer/defines.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan-renderer/vulkan-renderer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vulkan-renderer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/entry.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Common/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Common/*.mm
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Common/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Main/Main.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/*.mm
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/*.h
+
+    # Entry
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Init.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Init.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Event.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Event.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/EventQueue.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Main.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/State.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/WindowDesc.h
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}EventQueue.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}EventQueue.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}Window.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}Window.h
+
+    # Renderer
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/renderer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/renderer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/framebuffer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/framebuffer.cpp
+
+    # World
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/world/world.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/world/world.cpp
+
+    # Entity
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entity/camera.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entity/camera.cpp
 )
 
 # Solution Filters
@@ -116,8 +139,8 @@ endforeach()
 # Main files
 file(GLOB_RECURSE MAIN_SOURCES RELATIVE
     ${CMAKE_HOME_DIRECTORY}
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Main/${VR_API_PATH}Main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Main/${VR_API_PATH}Main.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}Main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}Main.mm
 )
 
 set(XMAIN_SOURCES ${MAIN_SOURCES} CACHE STRING "Global Variable - The source files for the currently active protocol.")

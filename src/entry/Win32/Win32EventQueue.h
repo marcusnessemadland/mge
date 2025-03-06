@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 
-#include "../Common/Event.h"
+#include "../Event.h"
 
 #include <queue>
 
