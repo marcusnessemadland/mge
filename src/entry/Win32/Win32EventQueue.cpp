@@ -1,5 +1,6 @@
 #include "Win32EventQueue.h"
-#include "../Common/Window.h"
+
+#include "vulkan-renderer/vulkan-renderer.h"
 
 #include "Shobjidl.h"
 #include "dwmapi.h"
@@ -33,9 +34,12 @@ namespace
 RAWINPUTDEVICE rawInputDevice[1];
 }
 
-namespace xwin
+namespace vr
 {
-EventQueue::EventQueue() { initialized = false; }
+EventQueue::EventQueue() 
+{ 
+    initialized = false; 
+}
 
 void EventQueue::update()
 {
@@ -69,9 +73,9 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     UINT message = msg.message;
     LRESULT result = 0;
     RECT currentWindowRect = {-1, -1, -1, -1};
-    // TODO: hwnd to xwin::Window unordered_map, when xwin::Window closes, it
+    // TODO: hwnd to Window unordered_map, when Window closes, it
     // sends a message to the event queue to remove that hwnd
-    // and any remaining events that match that xwin::Window
+    // and any remaining events that match that Window
 
     if (!initialized)
     {
@@ -83,13 +87,13 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
         RegisterRawInputDevices(rawInputDevice, 1, sizeof(rawInputDevice[0]));
     }
 
-    xwin::Event e = xwin::Event(xwin::EventType::None, window);
+    Event e = Event(EventType::None, window);
 
     switch (message)
     {
     case WM_CREATE:
     {
-        e = xwin::Event(xwin::EventType::Create, window);
+        e = Event(EventType::Create, window);
         break;
     }
     case WM_PAINT:
@@ -100,7 +104,7 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
         GetWindowRect(window->hwnd, &rect);
         int cxWidth = rect.right - rect.left;
         int cyHeight = rect.bottom - rect.top;
-        unsigned bg = window->getDesc().backgroundColor;
+        unsigned bg = window->getDesc()->backgroundColor;
         unsigned r = (bg & 0xff000000) >> 24;
         unsigned g = (bg & 0x00ff0000) >> 16;
         unsigned b = (bg & 0x0000ff00) >> 8;
@@ -112,7 +116,7 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
         FillRect(ps.hdc, &rect, BorderBrush);
         EndPaint(window->hwnd, &ps);
 
-        e = xwin::Event(xwin::EventType::Paint, window);
+        e = Event(EventType::Paint, window);
         break;
     }
     case WM_ERASEBKGND:
@@ -122,27 +126,27 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     case WM_CLOSE:
     case WM_DESTROY:
     {
-        e = xwin::Event(xwin::EventType::Close, window);
+        e = Event(EventType::Close, window);
         break;
     }
     case WM_SETFOCUS:
     {
-        e = xwin::Event(xwin::FocusData(true), window);
+        e = Event(FocusData(true), window);
         break;
     }
     case WM_KILLFOCUS:
     {
-        e = xwin::Event(xwin::FocusData(false), window);
+        e = Event(FocusData(false), window);
         break;
     }
 
     case WM_MOUSEWHEEL:
     {
         short modifiers = LOWORD(msg.wParam);
-        e = xwin::Event(
-            xwin::MouseWheelData(
+        e = Event(
+            MouseWheelData(
                 GET_WHEEL_DELTA_WPARAM(msg.wParam) / WHEEL_DELTA,
-                xwin::ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
+                ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
                                     modifiers & MK_SHIFT, modifiers & 0)),
             window);
         break;
@@ -150,10 +154,10 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     case WM_LBUTTONDOWN:
     {
         short modifiers = LOWORD(msg.wParam);
-        e = xwin::Event(
-            xwin::MouseInputData(
+        e = Event(
+            MouseInputData(
                 MouseInput::Left, ButtonState::Pressed,
-                xwin::ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
+                ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
                                     modifiers & MK_SHIFT, modifiers & 0)),
             window);
         break;
@@ -161,10 +165,10 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     case WM_MBUTTONDOWN:
     {
         short modifiers = LOWORD(msg.wParam);
-        e = xwin::Event(
-            xwin::MouseInputData(
+        e = Event(
+            MouseInputData(
                 MouseInput::Middle, ButtonState::Pressed,
-                xwin::ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
+                ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
                                     modifiers & MK_SHIFT, modifiers & 0)),
             window);
         break;
@@ -172,10 +176,10 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     case WM_RBUTTONDOWN:
     {
         short modifiers = LOWORD(msg.wParam);
-        e = xwin::Event(
-            xwin::MouseInputData(
+        e = Event(
+            MouseInputData(
                 MouseInput::Right, ButtonState::Pressed,
-                xwin::ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
+                ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
                                     modifiers & MK_SHIFT, modifiers & 0)),
             window);
         break;
@@ -184,11 +188,11 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     {
         short modifiers = LOWORD(msg.wParam);
         short x = HIWORD(msg.wParam);
-        e = xwin::Event(
-            xwin::MouseInputData(
+        e = Event(
+            MouseInputData(
                 x & XBUTTON1 ? MouseInput::Button4 : MouseInput::Button5,
                 ButtonState::Pressed,
-                xwin::ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
+                ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
                                     modifiers & MK_SHIFT, modifiers & 0)),
             window);
         break;
@@ -197,11 +201,11 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     {
         short modifiers = LOWORD(msg.wParam);
         short x = HIWORD(msg.wParam);
-        e = xwin::Event(
-            xwin::MouseInputData(
+        e = Event(
+            MouseInputData(
                 x & XBUTTON1 ? MouseInput::Button4 : MouseInput::Button5,
                 ButtonState::Released,
-                xwin::ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
+                ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
                                     modifiers & MK_SHIFT, modifiers & 0)),
             window);
         break;
@@ -212,10 +216,10 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     case WM_LBUTTONUP:
     {
         short modifiers = LOWORD(msg.wParam);
-        e = xwin::Event(
-            xwin::MouseInputData(
+        e = Event(
+            MouseInputData(
                 MouseInput::Left, ButtonState::Released,
-                xwin::ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
+                ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
                                     modifiers & MK_SHIFT, modifiers & 0)),
             window);
         break;
@@ -223,10 +227,10 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     case WM_MBUTTONUP:
     {
         short modifiers = LOWORD(msg.wParam);
-        e = xwin::Event(
-            xwin::MouseInputData(
+        e = Event(
+            MouseInputData(
                 MouseInput::Middle, ButtonState::Released,
-                xwin::ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
+                ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
                                     modifiers & MK_SHIFT, modifiers & 0)),
             window);
         break;
@@ -234,10 +238,10 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     case WM_RBUTTONUP:
     {
         short modifiers = LOWORD(msg.wParam);
-        e = xwin::Event(
-            xwin::MouseInputData(
+        e = Event(
+            MouseInputData(
                 MouseInput::Right, ButtonState::Released,
-                xwin::ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
+                ModifierState(modifiers & MK_CONTROL, modifiers & MK_ALT,
                                     modifiers & MK_SHIFT, modifiers & 0)),
             window);
         break;
@@ -277,8 +281,8 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
                 raw->data.mouse.ulRawButtons, raw->data.mouse.lLastX,
                 raw->data.mouse.lLastY, raw->data.mouse.ulExtraInformation;
 
-            e = xwin::Event(
-                xwin::MouseRawData(static_cast<int>(raw->data.mouse.lLastX),
+            e = Event(
+                MouseRawData(static_cast<int>(raw->data.mouse.lLastX),
                                    static_cast<int>(raw->data.mouse.lLastY)),
                 window);
         }
@@ -346,8 +350,8 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
             }
         }*/
 
-        e = xwin::Event(
-            xwin::MouseMoveData(
+        e = Event(
+            MouseMoveData(
                 static_cast<unsigned>(area.left <= x && x <= area.right
                                           ? x - area.left
                                           : 0xFFFFFFFF),
@@ -682,11 +686,11 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
 
         if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN)
         {
-            e = xwin::Event(KeyboardData(d, ButtonState::Pressed, ms), window);
+            e = Event(KeyboardData(d, ButtonState::Pressed, ms), window);
         }
         else if (message == WM_KEYUP || message == WM_SYSKEYUP)
         {
-            e = xwin::Event(KeyboardData(d, ButtonState::Released, ms), window);
+            e = Event(KeyboardData(d, ButtonState::Released, ms), window);
         }
         break;
     }
@@ -696,7 +700,7 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
         width = static_cast<unsigned>((UINT64)msg.lParam & 0xFFFF);
         height = static_cast<unsigned>((UINT64)msg.lParam >> 16);
 
-        e = xwin::Event(ResizeData(width, height, false), window);
+        e = Event(ResizeData(width, height, false), window);
         break;
     }
     case WM_SIZING:
@@ -717,7 +721,7 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
         RedrawWindow(hwnd, NULL, NULL,
                      RDW_INVALIDATE | RDW_NOERASE | RDW_INTERNALPAINT);
 
-        e = xwin::Event(ResizeData(width, height, true), window);
+        e = Event(ResizeData(width, height, true), window);
         result = WVR_REDRAW;
         break;
     }
@@ -756,7 +760,7 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     {
         WORD curDPI = HIWORD(msg.wParam);
         FLOAT fscale = (float)curDPI / USER_DEFAULT_SCREEN_DPI;
-        e = xwin::Event(DpiData(fscale), window);
+        e = Event(DpiData(fscale), window);
         if (!IsZoomed(window->hwnd))
         {
             RECT* const prcNewWindow = (RECT*)msg.lParam;
@@ -769,7 +773,7 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     }
     case WM_NCCALCSIZE:
     {
-        if (!window->getDesc().frame)
+        if (!window->getDesc()->frame)
         {
             if (msg.lParam && msg.wParam)
             {
@@ -794,8 +798,8 @@ LRESULT EventQueue::pushEvent(MSG msg, Window* window)
     {
         MINMAXINFO* min_max = reinterpret_cast<MINMAXINFO*>(msg.lParam);
 
-        min_max->ptMinTrackSize.x = window->getDesc().minWidth;
-        min_max->ptMinTrackSize.y = window->getDesc().minHeight;
+        min_max->ptMinTrackSize.x = window->getDesc()->minWidth;
+        min_max->ptMinTrackSize.y = window->getDesc()->minHeight;
         break;
     }
     default:

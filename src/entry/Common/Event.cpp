@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-namespace xwin
+namespace vr
 {
 Event::Event(EventType type, Window* window) : type(type), window(window) {}
 
@@ -74,7 +74,7 @@ ResizeData::ResizeData(unsigned width, unsigned height, bool resizing)
 
 /**
  * A map of the Keys enum to chars for matching keyboard event data.
- * Convenient for converting xwin::Key(s) to strings for serialization
+ * Convenient for converting Key(s) to strings for serialization
  * Though for certain platforms that natively support this
  * (Mac OS, iOS, WebAssembly) we should opt to use those functions.
  */

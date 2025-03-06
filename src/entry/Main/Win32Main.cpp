@@ -53,7 +53,7 @@ INT WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         argv = NULL;
     }
 
-    xwin::init(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+    vr::init(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
     _main_(argc, (const char**)argv);
 
     // Free up the items we had to allocate for the command line arguments.

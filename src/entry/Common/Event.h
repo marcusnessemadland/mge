@@ -8,7 +8,7 @@
  * - W3's DOM Events
  * <https://dvcs.w3.org/hg/dom3events/raw-file/tip/html/DOM3-Events.html>
  */
-namespace xwin
+namespace vr
 {
 class Window;
 
@@ -267,7 +267,7 @@ typedef Key CharToKeyMap[static_cast<size_t>(Key::KeysMax)];
 const char* convertKeyToString(Key key);
 
 /**
- * Converts a string name to a xwin::Key for deserialization
+ * Converts a string name to a Key for deserialization
  */
 Key convertStringToKey(const char* str);
 

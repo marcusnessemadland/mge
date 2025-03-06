@@ -6,7 +6,7 @@
 
 #include <queue>
 
-namespace xwin
+namespace vr
 {
 class Window;
 

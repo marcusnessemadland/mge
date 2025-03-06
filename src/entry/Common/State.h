@@ -1,17 +1,19 @@
 #pragma once
 
-#include <bx/platform.h>
-
-#ifdef BX_PLATFORM_WINDOWS
+#if defined(VR_WIN32)
 #include <Windows.h>
+#elif defined(VR_XCB)
+#include <xcb/xcb.h>
+#elif defined(VR_XLIB)
+#include <X11/Xlib.h>
 #endif
 
-namespace xwin
+namespace vr
 {
 struct XWinState
 {
 
-#if defined(BX_PLATFORM_WINDOWS)
+#if defined(VR_WIN32)
 
     HINSTANCE hInstance;
     HINSTANCE hPrevInstance;
@@ -24,6 +26,32 @@ struct XWinState
           lpCmdLine(lpCmdLine), nCmdShow(nCmdShow)
     {
     }
+#elif defined(VR_COCOA) || defined(VR_UIKIT)
+
+    int argc;
+    const char** argv;
+    void* application;
+
+    XWinState(int argc, const char** argv, void* application)
+        : argc(argc), argv(argv), application(application)
+    {
+    }
+#elif defined(VR_XCB)
+    int argc;
+    const char** argv;
+    xcb_connection_t* connection;
+    xcb_screen_t* screen;
+    XWinState(int argc, const char** argv, xcb_connection_t* connection,
+              xcb_screen_t* screen)
+        : argc(argc), argv(argv), connection(connection), screen(screen)
+    {
+    }
+
+#elif defined(VR_ANDROID)
+
+    android_app* app;
+
+    XWinState(android_app* app) : app(app) {}
 
 #else
 

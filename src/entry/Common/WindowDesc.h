@@ -5,7 +5,7 @@
 /**
  * Initial window description
  */
-namespace xwin
+namespace vr
 {
 struct WindowDesc
 {
