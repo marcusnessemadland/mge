@@ -9,12 +9,29 @@ if(NOT IS_DIRECTORY ${VR_DIR})
 	return()
 endif()
 
+# Quick platform detection
+if(WIN32)
+    set(PLATFORM_API "Win32")
+else()
+    set(PLATFORM_API "Noop")
+endif()
+
 # Grab the vulkan-renderer source files
 file(
 	GLOB_RECURSE
 	VR_SOURCES
-	${VR_DIR}/src/*.cpp
-	${VR_DIR}/src/*.h
+	${VR_DIR}/src/entry/CrossWindow.cpp
+    ${VR_DIR}/src/entry/CrossWindow.h
+    ${VR_DIR}/src/entry/Common/*.cpp
+    ${VR_DIR}/src/entry/Common/*.mm
+    ${VR_DIR}/src/entry/Common/*.h
+    ${VR_DIR}/src/entry/Main/Main.h
+	${VR_DIR}/src/entry/Main/${PLATFORM_API}Main/*.cpp
+	${VR_DIR}/src/entry/${PLATFORM_API}/*.cpp
+    ${VR_DIR}/src/entry/${PLATFORM_API}/*.mm
+    ${VR_DIR}/src/entry/${PLATFORM_API}/*.h
+	${VR_DIR}/src/renderer/*.cpp
+	${VR_DIR}/src/renderer/*.h
 	${VR_DIR}/include/vulkan-renderer/*.h
 )
 
@@ -42,3 +59,11 @@ target_link_libraries(vulkan-renderer PUBLIC bx)
 
 # Put in a "vulkan-renderer" folder in Visual Studio
 set_target_properties(vulkan-renderer PROPERTIES FOLDER "vulkan-renderer")
+
+# Preserve folder structure in Visual Studio
+foreach(source_file ${VR_SOURCES})
+    get_filename_component(source_path "${source_file}" PATH)
+    file(RELATIVE_PATH source_path "${VR_DIR}" "${source_path}")
+    string(REPLACE "/" "\\" source_path "${source_path}")
+    source_group("${source_path}" FILES "${source_file}")
+endforeach()

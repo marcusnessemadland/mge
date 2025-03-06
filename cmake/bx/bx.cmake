@@ -110,3 +110,11 @@ endif()
 
 # Put in a "vulkan-renderer" folder in Visual Studio
 set_target_properties(bx PROPERTIES FOLDER "vulkan-renderer")
+
+# Preserve folder structure in Visual Studio
+foreach(source_file ${BX_SOURCES})
+    get_filename_component(source_path "${source_file}" PATH)
+    file(RELATIVE_PATH source_path "${BX_DIR}" "${source_path}")
+    string(REPLACE "/" "\\" source_path "${source_path}")
+    source_group("${source_path}" FILES "${source_file}")
+endforeach()
