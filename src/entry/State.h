@@ -1,3 +1,8 @@
+/*
+ * Copyright 2025 Marcus Nesse Madland. All rights reserved.
+ * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ */
+
 #pragma once
 
 #if defined(VR_WIN32)
@@ -10,57 +15,58 @@
 
 namespace vr
 {
-struct XWinState
-{
-
-#if defined(VR_WIN32)
-
-    HINSTANCE hInstance;
-    HINSTANCE hPrevInstance;
-    LPSTR lpCmdLine;
-    int nCmdShow;
-
-    XWinState(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
-              int nCmdShow)
-        : hInstance(hInstance), hPrevInstance(hPrevInstance),
-          lpCmdLine(lpCmdLine), nCmdShow(nCmdShow)
+    struct State
     {
-    }
-#elif defined(VR_COCOA) || defined(VR_UIKIT)
+    #if defined(VR_WIN32)
 
-    int argc;
-    const char** argv;
-    void* application;
+        HINSTANCE hInstance;
+        HINSTANCE hPrevInstance;
+        LPSTR lpCmdLine;
+        int nCmdShow;
 
-    XWinState(int argc, const char** argv, void* application)
-        : argc(argc), argv(argv), application(application)
-    {
-    }
-#elif defined(VR_XCB)
-    int argc;
-    const char** argv;
-    xcb_connection_t* connection;
-    xcb_screen_t* screen;
-    XWinState(int argc, const char** argv, xcb_connection_t* connection,
-              xcb_screen_t* screen)
-        : argc(argc), argv(argv), connection(connection), screen(screen)
-    {
-    }
+        State()
+        {
+        }
 
-#elif defined(VR_ANDROID)
+        State(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+            : hInstance(hInstance), hPrevInstance(hPrevInstance), lpCmdLine(lpCmdLine), nCmdShow(nCmdShow)
+        {
+        }
 
-    android_app* app;
+    #elif defined(VR_COCOA) || defined(VR_UIKIT)
 
-    XWinState(android_app* app) : app(app) {}
+        int argc;
+        const char** argv;
+        void* application;
 
-#else
+        State(int argc, const char** argv, void* application)
+            : argc(argc), argv(argv), application(application)
+        {
+        }
+    #elif defined(VR_XCB)
+        int argc;
+        const char** argv;
+        xcb_connection_t* connection;
+        xcb_screen_t* screen;
+        State(int argc, const char** argv, xcb_connection_t* connection,
+                  xcb_screen_t* screen)
+            : argc(argc), argv(argv), connection(connection), screen(screen)
+        {
+        }
 
-    int argc;
-    const char** argv;
+    #elif defined(VR_ANDROID)
 
-    XWinState(int argc, const char** argv) : argc(argc), argv(argv) {}
+        android_app* app;
 
-#endif
-    XWinState() {}
-};
+        State(android_app* app) : app(app) {}
+
+    #else
+
+        int argc;
+        const char** argv;
+
+        State(int argc, const char** argv) : argc(argc), argv(argv) {}
+
+    #endif
+    };
 }

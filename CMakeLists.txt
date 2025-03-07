@@ -62,25 +62,23 @@ endif()
 set(VR_API_PATH "Noop")
 
 if(VR_API STREQUAL "WIN32")
-    set(VR_API_PATH "Win32")
+    set(VR_API_PATH "win32")
 elseif(VR_API STREQUAL "UWP")
-    set(VR_API_PATH "UWP")
+    set(VR_API_PATH "uwp")
 elseif(VR_API STREQUAL "COCOA")
-    set(VR_API_PATH "Cocoa")
+    set(VR_API_PATH "cocoa")
 elseif(VR_API STREQUAL "UIKIT")
-    set(VR_API_PATH "UIKit")
+    set(VR_API_PATH "uikit")
 elseif(VR_API STREQUAL "XCB")
-    set(VR_API_PATH "XCB")
+    set(VR_API_PATH "xcb")
 elseif(VR_API STREQUAL "XLIB")
-    set(VR_API_PATH "XLIB")
+    set(VR_API_PATH "xlib")
 elseif(VR_API STREQUAL "ANDROID")
-    set(VR_API_PATH "Android")
-elseif(VR_API STREQUAL "UIKIT")
-    set(VR_API_PATH "UIKit")
+    set(VR_API_PATH "android")
 elseif(VR_API STREQUAL "WASM")
-    set(VR_API_PATH "WASM")
+    set(VR_API_PATH "wasm")
 elseif(VR_API STREQUAL "NOOP")
-    set(VR_API_PATH "Noop")
+    set(VR_API_PATH "noop")
 else()
     message( SEND_ERROR "VR_API can only be either AUTO, NOOP, WIN32, UWP, COCOA, UIKIT, XCB, XLIB, MIR, WAYLAND, ANDROID, or WASM.")
 endif()
@@ -90,57 +88,49 @@ message( STATUS "Building Vulkan Renderer for " ${VR_API_PATH} )
 # =============================================================
 
 # Sources
-file(GLOB_RECURSE FILE_SOURCES RELATIVE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-
+file(GLOB_RECURSE FILE_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     #
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan-renderer/defines.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan-renderer/vulkan-renderer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vulkan-renderer.cpp
 
     # Entry
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Init.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Init.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Event.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Event.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/EventQueue.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/Main.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/State.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/WindowDesc.h
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}EventQueue.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}EventQueue.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}Window.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}Window.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/eventqueue_${VR_API_PATH}.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/eventqueue_${VR_API_PATH}.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/eventqueue_${VR_API_PATH}.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/window_${VR_API_PATH}.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/window_${VR_API_PATH}.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/window_${VR_API_PATH}.h
 
     # Renderer
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/renderer.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/renderer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/framebuffer.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/framebuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/*.cpp
 
     # World
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/world/world.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/world/world.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/world/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/world/*.cpp
 
-    # Entity
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entity/camera.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entity/camera.cpp
+    # Game
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/game/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/game/*.cpp
 )
 
 # Solution Filters
 foreach(source IN LISTS FILE_SOURCES)
     get_filename_component(source_path "${source}" PATH)
     string(REPLACE "/" "\\" source_path_msvc "${source_path}")
-    string(REPLACE "src" "" source_path_final "${source_path_msvc}")
-    source_group("${source_path_final}" FILES "${source}")
+    #string(REPLACE "src" "" source_path_final "${source_path_msvc}")
+    #source_group("${source_path_final}" FILES "${source}")
+    source_group("${source_path_msvc}" FILES "${source}")
 endforeach()
 
 # Main files
 file(GLOB_RECURSE MAIN_SOURCES RELATIVE
     ${CMAKE_HOME_DIRECTORY}
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}Main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/${VR_API_PATH}Main.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/main_${VR_API_PATH}.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/main_${VR_API_PATH}.mm
 )
 
 set(XMAIN_SOURCES ${MAIN_SOURCES} CACHE STRING "Global Variable - The source files for the currently active protocol.")
@@ -270,7 +260,15 @@ elseif(VR_API STREQUAL "XCB")
     target_link_libraries(${PROJECT_NAME} ${X11_xcb_LIB})
     target_include_directories(${PROJECT_NAME} PUBLIC ${X11_xcb_INCLUDE_PATH})
 endif()
+
 # =============================================================
+
+add_subdirectory(3rdparty/bgfx)
+target_link_libraries(${PROJECT_NAME} PRIVATE bgfx bx bimg)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/bgfx/bgfx/include)
+
+# =============================================================
+
 
 # Preprocessor Definitions
 target_compile_definitions(${PROJECT_NAME} PUBLIC VR_${VR_API}=1)

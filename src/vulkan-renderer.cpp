@@ -1,42 +1,31 @@
+/*
+ * Copyright 2025 Marcus Nesse Madland. All rights reserved.
+ * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ */
+
 #include "vulkan-renderer/vulkan-renderer.h"
 
 namespace vr
 {
 	std::shared_ptr<Window> createWindow(const char* _name, uint32_t _x, uint32_t _y, uint32_t _width, uint32_t _height, uint32_t _flags)
 	{
-		WindowDesc desc;
-		desc.visible = true;
-		desc.name = _name;
-		desc.title = _name;
-		desc.x = _x;
-		desc.y = _y;
-		desc.width = _width;
-		desc.height = _height;
-
-		desc.centered = (_flags & VR_WINDOW_CENTERED) != 0;
-		desc.resizable = (_flags & VR_WINDOW_RESIZABLE) != 0;
-		desc.movable = (_flags & VR_WINDOW_MOVABLE) != 0;
-		desc.closable = (_flags & VR_WINDOW_CLOSABLE) != 0;
-		desc.minimizable = (_flags & VR_WINDOW_MINIMIZABLE) != 0;
-		desc.maximizable = (_flags & VR_WINDOW_MAXIMIZABLE) != 0;
-		desc.canFullscreen = (_flags & VR_WINDOW_CANFULLSCREEN) != 0;
-
-		std::shared_ptr<Window> window = std::make_shared<Window>();
-		window->create(desc);
+		std::shared_ptr<Window> window = std::make_shared<Window>(_name, _x, _y, _width, _height, _flags);
 		return window;
 	}
 
 	std::shared_ptr<EventQueue> createEventQueue(std::shared_ptr<Window>& _window)
 	{
 		std::shared_ptr<EventQueue> event = std::make_shared<EventQueue>();
-		_window->setEventQueue(event.get());
+		_window->setEventQueue(event.get()); // @todo Not a fan of this
 		return event;
 	}
-	std::shared_ptr<Framebuffer> createFramebuffer(std::shared_ptr<Window>& _window)
+
+	std::shared_ptr<Renderer> createRenderer(std::shared_ptr<Window>& _window)
 	{
-		std::shared_ptr<Framebuffer> framebuffer = std::make_shared<Framebuffer>();
-		return framebuffer;
+		std::shared_ptr<Renderer> renderer = std::make_shared<Renderer>(_window.get());
+		return renderer;
 	}
+
 	std::shared_ptr<World> createWorld()
 	{
 		std::shared_ptr<World> world = std::make_shared<World>();
@@ -48,4 +37,22 @@ namespace vr
 		std::shared_ptr<Camera> camera = std::make_shared<Camera>();
 		return camera;
 	}
-}
+
+} // namespace vr
+
+namespace vr
+{
+	State g_state;
+
+	bool init(MainArgs)
+	{
+		g_state = State(MainArgsVars);
+		return true;
+	}
+
+	const State& getState()
+	{
+		return g_state;
+	}
+
+} // namespace vr
