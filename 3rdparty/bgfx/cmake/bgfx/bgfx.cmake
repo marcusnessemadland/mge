@@ -202,8 +202,8 @@ if(NOT UNIX OR APPLE)
 	set_source_files_properties(${BGFX_DIR}/src/glcontext_glx.cpp PROPERTIES HEADER_FILE_ONLY ON)
 endif()
 
-# Put in a "vulkan-renderer" folder in Visual Studio
-set_target_properties(bgfx PROPERTIES FOLDER "vulkan-renderer/3rdparty")
+# Put in a "bgfx" folder in Visual Studio
+set_target_properties(bgfx PROPERTIES FOLDER "bgfx")
 
 # in Xcode we need to specify this file as objective-c++ (instead of renaming to .mm)
 if(XCODE)

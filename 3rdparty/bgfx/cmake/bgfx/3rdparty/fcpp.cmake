@@ -41,7 +41,7 @@ target_compile_definitions(
 )
 
 # Put in a "bgfx" folder in Visual Studio
-set_target_properties(fcpp PROPERTIES FOLDER "vulkan-renderer/3rdparty")
+set_target_properties(fcpp PROPERTIES FOLDER "bgfx")
 
 target_include_directories(fcpp PUBLIC ${FCPP_DIR})
 

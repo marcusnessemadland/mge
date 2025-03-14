@@ -28,7 +28,7 @@ file(
 add_library(bimg STATIC ${BIMG_SOURCES})
 
 # Put in a "bgfx" folder in Visual Studio
-set_target_properties(bimg PROPERTIES FOLDER "vulkan-renderer/3rdparty")
+set_target_properties(bimg PROPERTIES FOLDER "bgfx")
 
 target_include_directories(
 	bimg PUBLIC $<BUILD_INTERFACE:${BIMG_DIR}/include>$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>

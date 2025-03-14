@@ -17,7 +17,7 @@ endif()
 add_library(bimg_encode STATIC)
 
 # Put in a "bgfx" folder in Visual Studio
-set_target_properties(bimg_encode PROPERTIES FOLDER "vulkan-renderer/3rdparty")
+set_target_properties(bimg_encode PROPERTIES FOLDER "bgfx")
 
 target_include_directories(
 	bimg_encode

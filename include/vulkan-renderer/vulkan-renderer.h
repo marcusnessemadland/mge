@@ -7,44 +7,24 @@
 
 #include "defines.h"
 
-// Entry
-#include "entry/state.h"
+#include "engine/renderer.h"
+#include "engine/world.h"
+#include "engine/camera.h"
+#include "engine/state.h"
+#include "engine/mesh.h"
+#include "engine/model.h"
+#include "engine/material.h"
+#include "engine/texture.h"
+
 #ifdef VR_WIN32
-#include "entry-win32/window_win32.h"
-#include "entry-win32/eventqueue_win32.h"
+#include "engine/window_win32.h"
+#include "engine/eventqueue_win32.h"
 #elif VR_NOOP
-#include "entry-noop/window_noop.h"
-#include "entry-noop/eventqueue_noop.h"
+#include "engine/window_noop.h"
+#include "engine/eventqueue_noop.h"
 #endif
 
-// Renderer
-#include "renderer/renderer.h"
-
-// World
-#include "world/world.h"
-
-// Game
-#include "game/camera.h"
-
-// API
-namespace vr
-{
-	/// 
-	std::shared_ptr<Window> createWindow(const char* _name, uint32_t _x, uint32_t _y, uint32_t _width, uint32_t _height, uint32_t _flags);
-
-	///
-	std::shared_ptr<EventQueue> createEventQueue(std::shared_ptr<Window>& _window);
-
-	///
-	std::shared_ptr<Renderer> createRenderer(std::shared_ptr<Window>& _window);
-
-	///
-	std::shared_ptr<World> createWorld();
-
-	/// 
-	std::shared_ptr<Camera> createCamera(std::shared_ptr<World>& _world, Projection::Enum _projection);
-
-} // namespace vr
+void _main_(int argc, const char** argv);
 
 #if defined(VR_WIN32)
 #define MainArgs                                                               \
@@ -75,4 +55,4 @@ namespace vr
 
 } // namespace vr
 
-void _main_(int argc, const char** argv);
+

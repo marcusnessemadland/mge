@@ -51,7 +51,7 @@ target_compile_definitions(
 )
 
 # Put in a "bgfx" folder in Visual Studio
-set_target_properties(glslang PROPERTIES FOLDER "vulkan-renderer/3rdparty")
+set_target_properties(glslang PROPERTIES FOLDER "bgfx")
 
 target_include_directories(
 	glslang

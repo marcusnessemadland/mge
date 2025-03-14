@@ -61,7 +61,7 @@ endforeach()
 add_library(bx STATIC ${BX_SOURCES})
 
 # Put in a "bgfx" folder in Visual Studio
-set_target_properties(bx PROPERTIES FOLDER "vulkan-renderer/3rdparty")
+set_target_properties(bx PROPERTIES FOLDER "bgfx")
 
 # Build system specific configurations
 if(MINGW)
@@ -119,7 +119,7 @@ elseif(UNIX)
 endif()
 
 # Put in a "bgfx" folder in Visual Studio
-set_target_properties(bx PROPERTIES FOLDER "vulkan-renderer/3rdparty")
+set_target_properties(bx PROPERTIES FOLDER "bgfx")
 
 if(BGFX_INSTALL)
 	install(

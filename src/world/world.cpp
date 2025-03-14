@@ -3,18 +3,33 @@
  * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
  */
 
-#include "world/world.h"
-#include "renderer/renderer.h"
+#include "engine/world.h"
+#include "engine/entity.h"
+#include "engine/camera.h"
+#include "engine/renderer.h"
+
+#include <cassert>
 
 namespace vr {
+
+	World::World()
+		: m_camera(NULL)
+	{
+	}
 
 	void World::update()
 	{
 	}
 
-	void World::render(std::shared_ptr<Renderer>& _renderer)
+	void World::render(std::shared_ptr<Renderer> _renderer)
 	{
-		_renderer->render();
+		assert(m_camera != NULL); 
+		_renderer->render(this, m_camera);
+	}
+
+	std::shared_ptr<World> createWorld()
+	{
+		return std::make_shared<World>();
 	}
 
 } // namespace vr

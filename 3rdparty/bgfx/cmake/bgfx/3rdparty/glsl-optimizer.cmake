@@ -182,7 +182,7 @@ file(
 add_library(glsl-optimizer STATIC ${GLSL_OPTIMIZER_SOURCES})
 
 # Put in a "bgfx" folder in Visual Studio
-set_target_properties(glsl-optimizer PROPERTIES FOLDER "vulkan-renderer/3rdparty")
+set_target_properties(glsl-optimizer PROPERTIES FOLDER "bgfx")
 
 target_include_directories(
 	glsl-optimizer

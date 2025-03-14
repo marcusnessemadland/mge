@@ -46,7 +46,7 @@ if(BGFX_AMALGAMATED)
 endif()
 
 set_target_properties(
-	shaderc PROPERTIES FOLDER "vulkan-renderer/tools" #
+	shaderc PROPERTIES FOLDER "bgfx/tools" #
 					   OUTPUT_NAME ${BGFX_TOOLS_PREFIX}shaderc #
 )
 

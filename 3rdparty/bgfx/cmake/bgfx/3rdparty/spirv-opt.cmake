@@ -137,7 +137,7 @@ file(
 add_library(spirv-opt STATIC ${SPIRV_OPT_SOURCES})
 
 # Put in a "bgfx" folder in Visual Studio
-set_target_properties(spirv-opt PROPERTIES FOLDER "vulkan-renderer/3rdparty")
+set_target_properties(spirv-opt PROPERTIES FOLDER "bgfx")
 
 target_include_directories(
 	spirv-opt

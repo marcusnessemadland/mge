@@ -1,14 +1,11 @@
 # Project Info
-cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-cmake_policy(VERSION 3.18)
+cmake_minimum_required(VERSION 3.10.2) #3.18
 project(vulkan-renderer)
-enable_language(C)
-enable_language(CXX)
+cmake_policy(VERSION 3.18)
+
 
 # CMake Settings
-set(CMAKE_SUPPRESS_REGENERATION true)
-set(DCMAKE_GENERATOR_PLATFORM "x64")
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -90,31 +87,10 @@ message( STATUS "Building Vulkan Renderer for " ${VR_API_PATH} )
 # Sources
 file(GLOB_RECURSE FILE_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     #
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan-renderer/defines.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan-renderer/vulkan-renderer.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vulkan-renderer.cpp
-
-    # Entry
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/eventqueue_${VR_API_PATH}.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/eventqueue_${VR_API_PATH}.mm
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/eventqueue_${VR_API_PATH}.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/window_${VR_API_PATH}.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/window_${VR_API_PATH}.mm
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/window_${VR_API_PATH}.h
-
-    # Renderer
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/*.cpp
-
-    # World
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/world/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/world/*.cpp
-
-    # Game
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/game/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/game/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.sc
 )
 
 # Solution Filters
@@ -129,8 +105,8 @@ endforeach()
 # Main files
 file(GLOB_RECURSE MAIN_SOURCES RELATIVE
     ${CMAKE_HOME_DIRECTORY}
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry-${VR_API_PATH}/main_${VR_API_PATH}.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/entry/${VR_API_PATH}/main_${VR_API_PATH}.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/platform/main_${VR_API_PATH}.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/platform/main_${VR_API_PATH}.mm
 )
 
 set(XMAIN_SOURCES ${MAIN_SOURCES} CACHE STRING "Global Variable - The source files for the currently active protocol.")
@@ -186,7 +162,21 @@ function(vr_add_executable targetProject targetSources)
         )
     endif()
 
-    target_compile_definitions(${targetProject} PRIVATE VR_${VR_API}=1)
+    target_compile_definitions(
+		${targetProject}
+		PRIVATE 
+        VR_${VR_API}=1
+        "-D_CRT_SECURE_NO_WARNINGS" #
+		"-D__STDC_FORMAT_MACROS" #
+	)
+
+    set_property(
+        TARGET 
+        ${targetProject} 
+        PROPERTY 
+        VS_DEBUGGER_WORKING_DIRECTORY 
+        "${CMAKE_CURRENT_SOURCE_DIR}/runtime")
+
 endfunction()
 
 # =============================================================
@@ -200,6 +190,7 @@ add_library(
 target_include_directories(
     ${PROJECT_NAME} 
     PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan-renderer/
     ${CMAKE_CURRENT_SOURCE_DIR}/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/src/
     )
@@ -264,14 +255,57 @@ endif()
 # =============================================================
 
 add_subdirectory(3rdparty/bgfx)
-target_link_libraries(${PROJECT_NAME} PRIVATE bgfx bx bimg)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/bgfx/bgfx/include)
+target_link_libraries(${PROJECT_NAME} PUBLIC bgfx bx bimg bimg_decode)
+target_include_directories(${PROJECT_NAME} PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/bgfx/bgfx/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/bgfx/bx/include
+    )
 
 # =============================================================
 
+include(CMakeParseArguments)
+
+include(${CMAKE_CURRENT_LIST_DIR}/3rdparty/bgfx/cmake/bgfx/util/ConfigureDebugging.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/bgfx/cmake/bgfxToolUtils.cmake)
+
+# Shader (Deferred)
+bgfx_compile_shaders(
+  TYPE VERTEX
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/vs_deferred.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders
+  AS_HEADERS
+)
+
+bgfx_compile_shaders(
+  TYPE FRAGMENT
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/fs_deferred.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders
+  AS_HEADERS
+)
+
+# Shader (Tonemap)
+bgfx_compile_shaders(
+  TYPE VERTEX
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/vs_tonemap.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders
+  AS_HEADERS
+)
+
+bgfx_compile_shaders(
+  TYPE FRAGMENT
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/fs_tonemap.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders
+  AS_HEADERS
+)
+
+# =============================================================
 
 # Preprocessor Definitions
-target_compile_definitions(${PROJECT_NAME} PUBLIC VR_${VR_API}=1)
+target_compile_definitions(${PROJECT_NAME} PUBLIC VR_${VR_API}=1 NOMINMAX)
 
 # Put in a "vulkan-renderer" folder in Visual Studio
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "vulkan-renderer")
