@@ -15,6 +15,7 @@
 #include "engine/model.h"
 #include "engine/material.h"
 #include "engine/texture.h"
+#include "engine/scene.h"
 
 #ifdef VR_WIN32
 #include "engine/window_win32.h"

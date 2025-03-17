@@ -7,6 +7,7 @@
 #include "engine/entity.h"
 #include "engine/camera.h"
 #include "engine/renderer.h"
+#include "engine/scene.h"
 
 #include <cassert>
 
@@ -19,6 +20,10 @@ namespace vr {
 
 	void World::update()
 	{
+		for (auto& scene : m_scenes)
+		{
+			scene->update();
+		}
 	}
 
 	void World::render(std::shared_ptr<Renderer> _renderer)

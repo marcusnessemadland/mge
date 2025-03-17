@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.10.2) #3.18
 project(vulkan-renderer)
 cmake_policy(VERSION 3.18)
 
-
 # CMake Settings
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -91,14 +90,15 @@ file(GLOB_RECURSE FILE_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.sc
+
+    #
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/maya-bridge/include/maya-bridge/*.h
 )
 
 # Solution Filters
 foreach(source IN LISTS FILE_SOURCES)
     get_filename_component(source_path "${source}" PATH)
     string(REPLACE "/" "\\" source_path_msvc "${source_path}")
-    #string(REPLACE "src" "" source_path_final "${source_path_msvc}")
-    #source_group("${source_path_final}" FILES "${source}")
     source_group("${source_path_msvc}" FILES "${source}")
 endforeach()
 
@@ -254,11 +254,18 @@ endif()
 
 # =============================================================
 
+# BGFX
 add_subdirectory(3rdparty/bgfx)
 target_link_libraries(${PROJECT_NAME} PUBLIC bgfx bx bimg bimg_decode)
 target_include_directories(${PROJECT_NAME} PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/bgfx/bgfx/include
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/bgfx/bx/include
+    )
+#set_target_properties(bgfx PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx")
+
+# MAYA BRIDGE
+target_include_directories(${PROJECT_NAME} PUBLIC 
+${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/maya-bridge/include/
     )
 
 # =============================================================

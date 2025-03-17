@@ -20,6 +20,7 @@ namespace vr
 		friend class GBuffer;
 		friend class Camera;
 		friend class Model;
+		friend class Scene;
 
 	public:
 		World();
@@ -36,6 +37,7 @@ namespace vr
 	private:
 		Camera* m_camera;
 		std::vector<Model*> m_models;
+		std::vector<Scene*> m_scenes;
 	};
 
 }
