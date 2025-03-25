@@ -33,19 +33,24 @@ namespace vr
         baseColorFactor = _baseColor;
     }
 
-    void Material::setMetallicRoughness(std::shared_ptr<Texture> _metallicRoughness)
-    {
-        metallicRoughnessTexture = _metallicRoughness;
-    }
-
     void Material::setMetallic(float _metallic)
     {
         metallicFactor = _metallic;
     }
 
+    void Material::setMetallic(std::shared_ptr<Texture> _metallic)
+    {
+        metallicTexture = _metallic;
+    }
+
     void Material::setRoughness(float _roughness)
     {
         roughnessFactor = _roughness;
+    }
+
+    void Material::setRoughness(std::shared_ptr<Texture> _roughness)
+    {
+        roughnessTexture = _roughness;
     }
 
     void Material::setNormal(std::shared_ptr<Texture> _normal)

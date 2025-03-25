@@ -22,6 +22,7 @@ namespace vr
     {
         friend class Renderer;
         friend class GBuffer;
+        friend class Scene;
 
     public:
         Material(uint32_t _flags);
@@ -37,13 +38,16 @@ namespace vr
         void setColor(const Vec3& _baseColor);
 
         /// 
-        void setMetallicRoughness(std::shared_ptr<Texture> _metallicRoughness);
-
-        /// 
         void setMetallic(float _metallic);
 
         /// 
+        void setMetallic(std::shared_ptr<Texture> _metallic);
+
+        /// 
         void setRoughness(float _roughness);
+
+        /// 
+        void setRoughness(std::shared_ptr<Texture> _roughness);
 
         /// 
         void setNormal(std::shared_ptr<Texture> _normal);
@@ -68,7 +72,8 @@ namespace vr
         bool doubleSided;
 
         std::shared_ptr<Texture> baseColorTexture;
-        std::shared_ptr<Texture> metallicRoughnessTexture; //!< .b = Metallic, .g = Roughness
+        std::shared_ptr<Texture> metallicTexture; 
+        std::shared_ptr<Texture> roughnessTexture;
         std::shared_ptr<Texture> normalTexture;
         std::shared_ptr<Texture> occlusionTexture;
         std::shared_ptr<Texture> emissiveTexture;

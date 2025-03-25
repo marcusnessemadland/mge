@@ -4,9 +4,27 @@
  */
 
 #include "engine/entity.h"
+#include "engine/world.h"
+#include "engine/component.h"
 
 namespace vr
 {
+    void Entity::preUpdate(double _dt)
+    {
+        for (auto& component : m_components)
+        {
+            component->preUpdate(_dt);
+        }
+    }
+
+    void Entity::postUpdate(double _dt)
+    {
+        for (auto& component : m_components)
+        {
+            component->postUpdate(_dt);
+        }
+    }
+
     Entity::Entity()
         : m_position(Vec3()) 
         , m_rotation(Quat()) // Identity

@@ -69,58 +69,15 @@ namespace vr
         return x < min ? min : x > max ? max : x;
     }
 
-    /// UVec2
-    struct UVec2
-    {
-        unsigned x;
-        unsigned y;
-        UVec2(unsigned x = 0, unsigned y = 0) : x(x), y(y) {}
+    static float toRad(float degrees)  
+    { 
+        return degrees * VR_PIf / 180.0f;
+    }
 
-        template <typename T> UVec2 operator*(T b) const
-        {
-            UVec2 self = *this;
-            self.x = static_cast<unsigned>(static_cast<T>(self.x) * b);
-            self.y = static_cast<unsigned>(static_cast<T>(self.y) * b);
-            return self;
-        }
-        template <typename T> UVec2 operator/(T b) const
-        {
-            UVec2 self = *this;
-            self.x = static_cast<unsigned>(static_cast<T>(self.x) / b);
-            self.y = static_cast<unsigned>(static_cast<T>(self.y) / b);
-            return self;
-        }
-    };
-
-    //static inline UVec2 operator*(uint32_t s, UVec2 v)
-    //{
-    //    return UVec2(v.x * s, v.y * s);
-    //}
-    //
-    //static inline UVec2 operator*(UVec2 v, uint32_t s)
-    //{
-    //    return UVec2(v.x * s, v.y * s);
-    //}
-    //
-    //static inline UVec2 operator*(UVec2 v, UVec2 w)
-    //{
-    //    return UVec2(v.x * w.x, v.y * w.y);
-    //}
-    //
-    //static inline UVec2 operator/(UVec2 v, uint32_t s)
-    //{
-    //    return UVec2(v.x / s, v.y / s);
-    //}
-    //
-    //static inline UVec2 operator/(uint32_t s, UVec2 v)
-    //{
-    //    return UVec2(s / v.x, s / v.y);
-    //}
-    //
-    //static inline UVec2 operator/(UVec2 v, UVec2 w)
-    //{
-    //    return UVec2(v.x / w.x, v.y / w.y);
-    //}
+    static float toDeg(float radians)
+    { 
+        return radians * 180.0f / VR_PIf;
+    }
 
     /// Vec2
     struct Vec2
@@ -340,6 +297,16 @@ namespace vr
             clampf(v.x, min.x, max.x),
             clampf(v.y, min.y, max.y),
             clampf(v.z, min.z, max.z));
+    }
+
+    ///
+    static Vec3 rotate(const Vec3& v, const Vec3& axis, float angle)
+    {
+        Vec3 normalizedAxis = normalize(axis);
+        float cosTheta = cosf(angle);
+        float sinTheta = sinf(angle);
+
+        return v * cosTheta + cross(normalizedAxis, v) * sinTheta + normalizedAxis * dot(normalizedAxis, v) * (1 - cosTheta);
     }
 
     /// Quaternion

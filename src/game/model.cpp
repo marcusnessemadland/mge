@@ -3,15 +3,15 @@
  * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
  */
 
-#include "engine/model.h"
+#include "engine/entities/model.h"
+#include "engine/components/mesh_component.h"
 #include "engine/mesh.h"
 #include "engine/world.h"
 
 namespace vr
 {
-	Model::Model(std::shared_ptr<World> _world)
+	Model::Model()
 	{
-		_world->m_models.push_back(this);
 	}
 
 	Model::~Model()
@@ -20,12 +20,12 @@ namespace vr
 
 	std::shared_ptr<Model> createModel(std::shared_ptr<World> _world)
 	{
-		return std::make_shared<Model>(_world);
+		return _world->makeEntity<Model>();
 	}
 
 	void Model::addMesh(std::shared_ptr<Mesh> _mesh)
 	{
-		m_meshes.push_back(_mesh.get());
+		addComponent<MeshComponent>(_mesh);
 	}
 
 } // namespace vr

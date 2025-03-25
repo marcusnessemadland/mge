@@ -14,12 +14,11 @@ struct Samplers
         None = 0,
         
         BaseColor = 1,
-        MetalRoughness = 2,
-        Normal = 3,
-        Occlusion = 4,
-        Emissive = 5,
-        
-        Lights = 6,
+        Metal = 2,
+        Roughness = 3,
+        Normal = 4,
+        Occlusion = 5,
+        Emissive = 6,
         
         DeferredDiffuseA = 7,
         DeferredNormal = 8,

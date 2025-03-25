@@ -10,6 +10,7 @@
 namespace vr
 {
     Texture::Texture(const char* _filePath)
+        : m_filepath(_filePath)
     {
         m_th = bgfx::loadTexture(_filePath);
     }
@@ -35,7 +36,14 @@ namespace vr
 
     std::shared_ptr<Texture> loadTexture(const char* _filepath)
     {
-        return std::make_shared<Texture>(_filepath);
+        if (_filepath)
+        {
+            return std::make_shared<Texture>(_filepath);
+        }
+        else
+        {
+            return nullptr;
+        }
     }
 
 } // namespace vr

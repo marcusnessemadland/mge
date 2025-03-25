@@ -14,7 +14,8 @@ SAMPLER2D(s_texAlbedoLUT, SAMPLER_PBR_ALBEDO_LUT);
 #ifdef READ_MATERIAL
 
 SAMPLER2D(s_texBaseColor,         SAMPLER_PBR_BASECOLOR);
-SAMPLER2D(s_texMetallicRoughness, SAMPLER_PBR_METALROUGHNESS);
+SAMPLER2D(s_texMetallic,          SAMPLER_PBR_METAL);
+SAMPLER2D(s_texRoughness,         SAMPLER_PBR_ROUGHNESS);
 SAMPLER2D(s_texNormal,            SAMPLER_PBR_NORMAL);
 SAMPLER2D(s_texOcclusion,         SAMPLER_PBR_OCCLUSION);
 SAMPLER2D(s_texEmissive,          SAMPLER_PBR_EMISSIVE);
@@ -25,12 +26,14 @@ uniform vec4 u_emissiveFactorVec;
 uniform vec4 u_hasTextures;
 
 #define u_hasBaseColorTexture         ((uint(u_hasTextures.x) & uint(1 << 0)) != uint(0))
-#define u_hasMetallicRoughnessTexture ((uint(u_hasTextures.x) & uint(1 << 1)) != uint(0))
-#define u_hasNormalTexture            ((uint(u_hasTextures.x) & uint(1 << 2)) != uint(0))
-#define u_hasOcclusionTexture         ((uint(u_hasTextures.x) & uint(1 << 3)) != uint(0))
-#define u_hasEmissiveTexture          ((uint(u_hasTextures.x) & uint(1 << 4)) != uint(0))
+#define u_hasMetallicTexture          ((uint(u_hasTextures.x) & uint(1 << 1)) != uint(0))
+#define u_hasRoughnessTexture         ((uint(u_hasTextures.x) & uint(1 << 2)) != uint(0))
+#define u_hasNormalTexture            ((uint(u_hasTextures.x) & uint(1 << 3)) != uint(0))
+#define u_hasOcclusionTexture         ((uint(u_hasTextures.x) & uint(1 << 4)) != uint(0))
+#define u_hasEmissiveTexture          ((uint(u_hasTextures.x) & uint(1 << 5)) != uint(0))
 
-#define u_metallicRoughnessFactor (u_metallicRoughnessNormalOcclusionFactor.xy)
+#define u_metallicFactor          (u_metallicRoughnessNormalOcclusionFactor.x)
+#define u_roughnessFactor         (u_metallicRoughnessNormalOcclusionFactor.y)
 #define u_normalScale             (u_metallicRoughnessNormalOcclusionFactor.z)
 #define u_occlusionStrength       (u_metallicRoughnessNormalOcclusionFactor.w)
 #define u_emissiveFactor          (u_emissiveFactorVec.xyz)
@@ -74,15 +77,27 @@ vec4 pbrBaseColor(vec2 texcoord)
     }
 }
 
-vec2 pbrMetallicRoughness(vec2 texcoord)
+float pbrMetallic(vec2 texcoord)
 {
-    if(u_hasMetallicRoughnessTexture)
+    if(u_hasMetallicTexture)
     {
-        return texture2D(s_texMetallicRoughness, texcoord).bg * u_metallicRoughnessFactor;
+        return texture2D(s_texMetallic, texcoord).x * u_metallicFactor;
     }
     else
     {
-        return u_metallicRoughnessFactor;
+        return u_metallicFactor;
+    }
+}
+
+float pbrRoughness(vec2 texcoord)
+{
+    if(u_hasRoughnessTexture)
+    {
+        return texture2D(s_texRoughness, texcoord).x * u_roughnessFactor;
+    }
+    else
+    {
+        return u_roughnessFactor;
     }
 }
 
@@ -137,9 +152,8 @@ PBRMaterial pbrMaterial(vec2 texcoord)
     // Read textures/uniforms
 
     mat.albedo = pbrBaseColor(texcoord);
-    vec2 metallicRoughness = pbrMetallicRoughness(texcoord);
-    mat.metallic  = metallicRoughness.r;
-    mat.roughness = metallicRoughness.g;
+    mat.metallic  = pbrMetallic(texcoord);
+    mat.roughness = pbrRoughness(texcoord);
     mat.normal = pbrNormal(texcoord);
     mat.occlusion = pbrOcclusion(texcoord);
     mat.emissive = pbrEmissive(texcoord);

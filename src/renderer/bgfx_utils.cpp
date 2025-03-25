@@ -45,7 +45,7 @@ namespace vr
 				void* data = bx::alloc(&m_allocator, size);
 				bx::read(_reader, data, size, bx::ErrorAssert{});
 				bx::close(_reader);
-				if (NULL != _size)
+				if (nullptr != _size)
 				{
 					*_size = size;
 				}
@@ -56,12 +56,12 @@ namespace vr
 				BX_TRACE("Failed to open: %s.", _filePath.getCPtr());
 			}
 
-			if (NULL != _size)
+			if (nullptr != _size)
 			{
 				*_size = 0;
 			}
 
-			return NULL;
+			return nullptr;
 		}
 
 		void unload(void* _ptr)
@@ -81,13 +81,13 @@ namespace vr
 
 			uint32_t size;
 			void* data = load(&m_reader, _filePath, &size);
-			if (NULL != data)
+			if (nullptr != data)
 			{
 				bimg::ImageContainer* imageContainer = bimg::imageParse(&m_allocator, data, size);
 
-				if (NULL != imageContainer)
+				if (nullptr != imageContainer)
 				{
-					if (NULL != _orientation)
+					if (nullptr != _orientation)
 					{
 						*_orientation = imageContainer->m_orientation;
 					}
@@ -100,7 +100,7 @@ namespace vr
 					);
 					unload(data);
 
-					if (NULL != _info)
+					if (nullptr != _info)
 					{
 						bgfx::calcTextureSize(
 							*_info
@@ -171,9 +171,41 @@ namespace vr
 
 } // namespace vr
 
+namespace bx {
+
+	void mtxAdjugate(float* _result, const float* _a)
+
+	{
+		float cof[16];
+
+		cof[0] = _a[5] * (_a[10] * _a[15] - _a[11] * _a[14]) - _a[6] * (_a[9] * _a[15] - _a[11] * _a[13]) + _a[7] * (_a[9] * _a[14] - _a[10] * _a[13]);
+		cof[1] = -_a[4] * (_a[10] * _a[15] - _a[11] * _a[14]) + _a[6] * (_a[8] * _a[15] - _a[11] * _a[12]) - _a[7] * (_a[8] * _a[14] - _a[10] * _a[12]);
+		cof[2] = _a[4] * (_a[9] * _a[15] - _a[11] * _a[13]) - _a[5] * (_a[8] * _a[15] - _a[11] * _a[12]) + _a[7] * (_a[8] * _a[13] - _a[9] * _a[12]);
+		cof[3] = -_a[4] * (_a[9] * _a[14] - _a[10] * _a[13]) + _a[5] * (_a[8] * _a[14] - _a[10] * _a[12]) - _a[6] * (_a[8] * _a[13] - _a[9] * _a[12]);
+
+		cof[4] = -_a[1] * (_a[10] * _a[15] - _a[11] * _a[14]) + _a[2] * (_a[9] * _a[15] - _a[11] * _a[13]) - _a[3] * (_a[9] * _a[14] - _a[10] * _a[13]);
+		cof[5] = _a[0] * (_a[10] * _a[15] - _a[11] * _a[14]) - _a[2] * (_a[8] * _a[15] - _a[11] * _a[12]) + _a[3] * (_a[8] * _a[14] - _a[10] * _a[12]);
+		cof[6] = -_a[0] * (_a[9] * _a[15] - _a[11] * _a[13]) + _a[1] * (_a[8] * _a[15] - _a[11] * _a[12]) - _a[3] * (_a[8] * _a[13] - _a[9] * _a[12]);
+		cof[7] = _a[0] * (_a[9] * _a[14] - _a[10] * _a[13]) - _a[1] * (_a[8] * _a[14] - _a[10] * _a[12]) + _a[2] * (_a[8] * _a[13] - _a[9] * _a[12]);
+
+		cof[8] = _a[1] * (_a[6] * _a[15] - _a[7] * _a[14]) - _a[2] * (_a[5] * _a[15] - _a[7] * _a[13]) + _a[3] * (_a[5] * _a[14] - _a[6] * _a[13]);
+		cof[9] = -_a[0] * (_a[6] * _a[15] - _a[7] * _a[14]) + _a[2] * (_a[4] * _a[15] - _a[7] * _a[12]) - _a[3] * (_a[4] * _a[14] - _a[6] * _a[12]);
+		cof[10] = _a[0] * (_a[5] * _a[15] - _a[7] * _a[13]) - _a[1] * (_a[4] * _a[15] - _a[7] * _a[12]) + _a[3] * (_a[4] * _a[13] - _a[5] * _a[12]);
+		cof[11] = -_a[0] * (_a[5] * _a[14] - _a[6] * _a[13]) + _a[1] * (_a[4] * _a[14] - _a[6] * _a[12]) - _a[2] * (_a[4] * _a[13] - _a[5] * _a[12]);
+
+		cof[12] = -_a[1] * (_a[6] * _a[11] - _a[7] * _a[10]) + _a[2] * (_a[5] * _a[11] - _a[7] * _a[9]) - _a[3] * (_a[5] * _a[10] - _a[6] * _a[9]);
+		cof[13] = _a[0] * (_a[6] * _a[11] - _a[7] * _a[10]) - _a[2] * (_a[4] * _a[11] - _a[7] * _a[8]) + _a[3] * (_a[4] * _a[10] - _a[6] * _a[8]);
+		cof[14] = -_a[0] * (_a[5] * _a[11] - _a[7] * _a[9]) + _a[1] * (_a[4] * _a[11] - _a[7] * _a[8]) - _a[3] * (_a[4] * _a[9] - _a[5] * _a[8]);
+		cof[15] = _a[0] * (_a[5] * _a[10] - _a[6] * _a[9]) - _a[1] * (_a[4] * _a[10] - _a[6] * _a[8]) + _a[2] * (_a[4] * _a[9] - _a[5] * _a[8]);
+
+		mtxTranspose(_result, cof);
+	}
+
+} // namespace bx
+
 namespace bgfx
 {
-	static vr::Context* s_ctx = NULL;
+	static vr::Context* s_ctx = nullptr;
 
 	void initBgfxUtils()
 	{
@@ -183,7 +215,7 @@ namespace bgfx
 	void shutdownBgfxUtils()
 	{
 		delete s_ctx;
-		s_ctx = NULL;
+		s_ctx = nullptr;
 	}
 
 	bgfx::TextureHandle loadTexture(const char* _filePath, uint64_t _flags, bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation)

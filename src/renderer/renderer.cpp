@@ -16,28 +16,31 @@
 
 #include "bgfx_utils.h"
 #include <bgfx/bgfx.h>
+#include <bx/timer.h>
 
 #include <algorithm>
 
 namespace vr
 {
-	void Renderer::update(const World* _world, const Camera* _camera)
+	void Renderer::update(std::shared_ptr<World> _world, std::shared_ptr<Camera> _camera)
 	{
 		const bgfx::Caps* caps = bgfx::getCaps();
 
 		// Update world
-		if (m_world == NULL)
+		if (m_world == nullptr)
 		{
 			m_world = _world;
 		}
 
 		// Update resolution upon resize
-		UVec2 size = m_window->getWindowSize();
-		if (m_common->width != size.x ||
-			m_common->height != size.y)
+		uint32_t w = m_window->getWidth();
+		uint32_t h = m_window->getHeight();
+
+		if (m_common->width != w ||
+			m_common->height != h)
 		{
-			m_common->width = size.x;
-			m_common->height = size.y;
+			m_common->width = w;
+			m_common->height = h;
 
 			if (!m_window->isClosed())
 			{
@@ -48,12 +51,12 @@ namespace vr
 		}
 
 		// Update camera
-		if (_camera != NULL)
+		if (_camera != nullptr)
 		{
 			bx::mtxLookAt(
 				m_common->view,
 				toBgfxVec(_camera->m_position),
-				toBgfxVec(_camera->m_position + _camera->m_forward),
+				toBgfxVec(_camera->m_target),
 				toBgfxVec(_camera->m_up)
 			);
 
@@ -66,7 +69,7 @@ namespace vr
 					_camera->m_near,
 					_camera->m_far,
 					caps->homogeneousDepth,
-					bx::Handedness::Left
+					bx::Handedness::Right // Matches autodesk Maya
 				);
 			}
 			else
@@ -83,7 +86,7 @@ namespace vr
 					_camera->m_far,
 					0.0f,
 					caps->homogeneousDepth,
-					bx::Handedness::Left
+					bx::Handedness::Right // Matches autodesk Maya
 				);
 			}
 		}
@@ -94,8 +97,18 @@ namespace vr
 		m_common->firstFrame = false;
 	}
 
-	void Renderer::render(const World* _world, const Camera* _camera)
+	void Renderer::render(std::shared_ptr<World> _world, std::shared_ptr<Camera> _camera)
 	{
+		//
+		bgfx::dbgTextClear();
+
+		SampleData& sampleData = _world->m_sampleData;
+		bgfx::dbgTextPrintf(1, 1, 0xf, "min: %.3fms", sampleData.getMin());
+		bgfx::dbgTextPrintf(1, 2, 0xf, "max: %.3fms", sampleData.getMax());
+		bgfx::dbgTextPrintf(1, 3, 0xf, "avg: %.3fms", sampleData.getAverage());
+		bgfx::dbgTextPrintf(1, 4, 0xf, "framerate: %.2f fps", 1000.0f / sampleData.getAverage());
+		bgfx::dbgTextPrintf(1, 5, 0xf, "gfx: %s", bgfx::getRendererName(bgfx::getRendererType()));
+
 		// Update common resources before rendering
 		update(_world, _camera);
 
@@ -112,13 +125,12 @@ namespace vr
 
 	Renderer::Renderer(std::shared_ptr<Window> _window, RendererType::Enum _type)
 		: m_window(_window)
-		, m_world(NULL)
+		, m_world(nullptr)
 	{
 		// Common 
-		UVec2 size = m_window->getWindowSize();
 		m_common = std::make_unique<CommonResources>();
-		m_common->width = size.x;
-		m_common->height = size.y;
+		m_common->width = m_window->getWidth();
+		m_common->height = m_window->getHeight();
 
 		// Type
 		bgfx::RendererType::Enum type = bgfx::RendererType::Count;
@@ -131,16 +143,18 @@ namespace vr
 		init.type = type;
 		init.vendorId = BGFX_PCI_ID_NONE;
 		init.platformData.nwh = _window->getNativeHandle();
-		init.platformData.ndt = NULL;
+		init.platformData.ndt = nullptr;
 		init.platformData.type = bgfx::NativeWindowHandleType::Default;
 		init.resolution.width = m_common->width;
 		init.resolution.height = m_common->height;
-		init.resolution.reset = BGFX_RESET_VSYNC;
+		init.resolution.reset = BGFX_RESET_NONE;
 		bgfx::init(init);
 
+		bgfx::setDebug(BGFX_DEBUG_TEXT);
+
 		// Techniques
-		m_gbuffer = std::make_unique<GBuffer>(0, m_common.get());
-		m_tonemapping = std::make_unique<ToneMapping>(1, m_common.get(), m_gbuffer.get());
+		m_gbuffer = std::make_shared<GBuffer>(0, m_common);
+		m_tonemapping = std::make_shared<ToneMapping>(1, m_common, m_gbuffer);
 
 		// Layouts
 		Vertex::init();

@@ -8,6 +8,7 @@
 #include <bgfx/bgfx.h>
 
 #include <memory>
+#include <string>
 
 namespace vr
 {
@@ -15,6 +16,7 @@ namespace vr
     {
         friend class Renderer;
         friend class GBuffer;
+        friend class Scene;
 
     public:
         Texture();
@@ -28,6 +30,7 @@ namespace vr
         friend std::shared_ptr<Texture> loadTexture(const char* _filepath);
 
     private:
+        std::string m_filepath;
         bgfx::TextureHandle m_th;
     };
 }

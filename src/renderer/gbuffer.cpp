@@ -7,8 +7,9 @@
 #include "common_resources.h"
 #include "uniforms.h"
 
+#include "engine/entities/model.h"
+#include "engine/components/mesh_component.h"
 #include "engine/world.h"
-#include "engine/model.h"
 #include "engine/mesh.h"
 #include "engine/renderer.h"
 #include "engine/material.h"
@@ -88,10 +89,11 @@ namespace vr
 
 		const uint32_t hasTexturesMask = 0
 			| ((setTextureOrDefault(Samplers::BaseColor, m_baseColorSampler, _material->baseColorTexture) ? 1 : 0) << 0)
-			| ((setTextureOrDefault(Samplers::MetalRoughness, m_metallicRoughnessSampler, _material->metallicRoughnessTexture) ? 1 : 0) << 1)
-			| ((setTextureOrDefault(Samplers::Normal, m_normalSampler, _material->normalTexture) ? 1 : 0) << 2)
-			| ((setTextureOrDefault(Samplers::Occlusion, m_occlusionSampler, _material->occlusionTexture) ? 1 : 0) << 3)
-			| ((setTextureOrDefault(Samplers::Emissive, m_emissiveSampler, _material->emissiveTexture) ? 1 : 0) << 4);
+			| ((setTextureOrDefault(Samplers::Metal, m_metallicSampler, _material->metallicTexture) ? 1 : 0) << 1)
+			| ((setTextureOrDefault(Samplers::Roughness, m_roughnessSampler, _material->roughnessTexture) ? 1 : 0) << 2)
+			| ((setTextureOrDefault(Samplers::Normal, m_normalSampler, _material->normalTexture) ? 1 : 0) << 3)
+			| ((setTextureOrDefault(Samplers::Occlusion, m_occlusionSampler, _material->occlusionTexture) ? 1 : 0) << 4)
+			| ((setTextureOrDefault(Samplers::Emissive, m_emissiveSampler, _material->emissiveTexture) ? 1 : 0) << 5);
 		hasTexturesValues[0] = (float)hasTexturesMask;
 
 		bgfx::setUniform(m_hasTexturesUniform, hasTexturesValues);
@@ -107,7 +109,7 @@ namespace vr
 
 	bool GBuffer::setTextureOrDefault(uint8_t stage, bgfx::UniformHandle uniform, std::shared_ptr<Texture> texture)
 	{
-		bool valid = texture != NULL && bgfx::isValid(texture->m_th);
+		bool valid = texture != nullptr && bgfx::isValid(texture->m_th);
 		if (valid)
 		{
 			bgfx::setTexture(stage, uniform, texture->m_th);
@@ -120,10 +122,16 @@ namespace vr
 		return valid;
 	}
 
-	void GBuffer::submit(const World* _world)
+	void GBuffer::submit(std::shared_ptr<World> _world)
 	{
-		for (auto& model : _world->m_models)
+		for (auto& entity : _world->m_entities)
 		{
+			auto model = std::dynamic_pointer_cast<Model>(entity);
+			if (model == nullptr)
+			{
+				continue;
+			}
+
 			// SRT
 			float scaleMtx[16], rotationMtx[16], translationMtx[16];
 			Vec3 position = model->getPosition();
@@ -139,8 +147,16 @@ namespace vr
 			bx::mtxMul(temp, rotationMtx, scaleMtx);
 			bx::mtxMul(mtx, translationMtx, temp);
 
-			for (auto& mesh : model->m_meshes)
+			for (auto& component : model->m_components)
 			{
+				std::shared_ptr<MeshComponent> meshComp = std::dynamic_pointer_cast<MeshComponent>(component);
+				if (meshComp == nullptr)
+				{
+					continue;
+				}
+
+				std::shared_ptr<Mesh> mesh = meshComp->m_mesh;
+
 				// Normal matrix
 				// https://github.com/graphitemaster/normals_revisited#the-details-of-transforming-normals
 				
@@ -163,8 +179,14 @@ namespace vr
 				// Material
 				setMaterial(mesh->m_material);
 
-				uint64_t state = BGFX_STATE_DEFAULT;
-				if (mesh->m_material != NULL)
+				uint64_t state = 0 
+					| BGFX_STATE_WRITE_RGB 
+					| BGFX_STATE_WRITE_A 
+					| BGFX_STATE_WRITE_Z 
+					| BGFX_STATE_DEPTH_TEST_LESS 
+					| BGFX_STATE_MSAA;
+
+				if (mesh->m_material != nullptr)
 				{
 					if (mesh->m_material->blend)
 					{
@@ -193,7 +215,7 @@ namespace vr
 		}
 	}
 
-	GBuffer::GBuffer(bgfx::ViewId _view, const CommonResources* _common)
+	GBuffer::GBuffer(bgfx::ViewId _view, std::shared_ptr<CommonResources> _common)
 		: m_view(_view)
 		, m_common(_common)
 	{
@@ -214,7 +236,8 @@ namespace vr
 		m_hasTexturesUniform = bgfx::createUniform("u_hasTextures", bgfx::UniformType::Vec4);
 		m_multipleScatteringUniform = bgfx::createUniform("u_multipleScatteringVec", bgfx::UniformType::Vec4);
 		m_baseColorSampler = bgfx::createUniform("s_texBaseColor", bgfx::UniformType::Sampler);
-		m_metallicRoughnessSampler = bgfx::createUniform("s_texMetallicRoughness", bgfx::UniformType::Sampler);
+		m_metallicSampler = bgfx::createUniform("s_texMetallic", bgfx::UniformType::Sampler);
+		m_roughnessSampler = bgfx::createUniform("s_texRoughness", bgfx::UniformType::Sampler);
 		m_normalSampler = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 		m_occlusionSampler = bgfx::createUniform("s_texOcclusion", bgfx::UniformType::Sampler);
 		m_emissiveSampler = bgfx::createUniform("s_texEmissive", bgfx::UniformType::Sampler);
@@ -235,14 +258,15 @@ namespace vr
 		bgfx::destroy(m_hasTexturesUniform);
 		bgfx::destroy(m_multipleScatteringUniform);
 		bgfx::destroy(m_baseColorSampler);
-		bgfx::destroy(m_metallicRoughnessSampler);
+		bgfx::destroy(m_metallicSampler);
+		bgfx::destroy(m_roughnessSampler);
 		bgfx::destroy(m_normalSampler);
 		bgfx::destroy(m_occlusionSampler);
 		bgfx::destroy(m_emissiveSampler);
 		bgfx::destroy(m_defaultTexture);
 	}
 
-	void GBuffer::render(const World* _world)
+	void GBuffer::render(std::shared_ptr<World> _world)
 	{
 		// Recreate gbuffer upon reset. 
 		if (m_common->firstFrame)

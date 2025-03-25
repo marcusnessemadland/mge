@@ -40,9 +40,9 @@ namespace vr
 		friend class GBuffer;
 		friend class ToneMapping;
 
-		void update(const World* _world, const Camera* _camera);
+		void update(std::shared_ptr<World> _world, std::shared_ptr<Camera> _camera);
 		void postUpdate();
-		void render(const World* _world, const Camera* _camera);
+		void render(std::shared_ptr<World> _world, std::shared_ptr<Camera> _camera);
 
 	public:
 		Renderer(std::shared_ptr<Window> _window, RendererType::Enum _type);
@@ -54,10 +54,10 @@ namespace vr
 	private:
 		std::shared_ptr<Window> m_window;
 
-		std::unique_ptr<CommonResources> m_common;
-		std::unique_ptr<GBuffer> m_gbuffer;
-		std::unique_ptr<ToneMapping> m_tonemapping;
+		std::shared_ptr<CommonResources> m_common;
+		std::shared_ptr<GBuffer> m_gbuffer;
+		std::shared_ptr<ToneMapping> m_tonemapping;
 
-		const World* m_world;
+		std::shared_ptr<World> m_world;
 	};
 }

@@ -19,10 +19,15 @@ namespace vr
 	bx::Quaternion toBgfxQuat(const Quat& _q);
 }
 
+namespace bx
+{
+	void mtxAdjugate(float* _result, const float* _a);
+}
+
 namespace bgfx
 {
 	void initBgfxUtils();
 	void shutdownBgfxUtils();
 
-	bgfx::TextureHandle loadTexture(const char* _filePath, uint64_t _flags = BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, bgfx::TextureInfo* _info = NULL, bimg::Orientation::Enum* _orientation = NULL);
+	bgfx::TextureHandle loadTexture(const char* _filePath, uint64_t _flags = BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, bgfx::TextureInfo* _info = nullptr, bimg::Orientation::Enum* _orientation = nullptr);
 }

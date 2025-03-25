@@ -41,17 +41,17 @@ namespace vr
 
         void setMaterial(std::shared_ptr<Material> _material);
         bool setTextureOrDefault(uint8_t stage, bgfx::UniformHandle uniform, std::shared_ptr<Texture> texture);
-        void submit(const World* _world);
+        void submit(std::shared_ptr<World> _world);
 
 	public:
-		GBuffer(bgfx::ViewId _view, const CommonResources* _common);
+		GBuffer(bgfx::ViewId _view, std::shared_ptr<CommonResources> _common);
 		~GBuffer();
 
-		void render(const World* _world);
+		void render(std::shared_ptr<World> _world);
 
 	private:
 		bgfx::ViewId m_view;
-		const CommonResources* m_common;
+        std::shared_ptr<CommonResources> m_common;
 
         bool multipleScatteringEnabled = true;
         bool whiteFurnaceEnabled = false;
@@ -66,7 +66,8 @@ namespace vr
         bgfx::UniformHandle m_hasTexturesUniform;
         bgfx::UniformHandle m_multipleScatteringUniform;
         bgfx::UniformHandle m_baseColorSampler;
-        bgfx::UniformHandle m_metallicRoughnessSampler;
+        bgfx::UniformHandle m_metallicSampler;
+        bgfx::UniformHandle m_roughnessSampler;
         bgfx::UniformHandle m_normalSampler;
         bgfx::UniformHandle m_occlusionSampler;
         bgfx::UniformHandle m_emissiveSampler;

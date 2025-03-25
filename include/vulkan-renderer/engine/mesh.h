@@ -28,6 +28,7 @@ namespace vr
 	{
 		friend class Renderer;
 		friend class GBuffer;
+		friend class Scene;
 
 	public:
 		Mesh(const Primitive::Enum _primitive, const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices);

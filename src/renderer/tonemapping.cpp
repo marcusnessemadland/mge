@@ -48,7 +48,7 @@ namespace vr
 		}
 	}
 
-	ToneMapping::ToneMapping(bgfx::ViewId _view, const CommonResources* _common, const GBuffer* _gbuffer)
+	ToneMapping::ToneMapping(bgfx::ViewId _view, std::shared_ptr<CommonResources> _common, std::shared_ptr<GBuffer> _gbuffer)
 		: m_view(_view)
 		, m_common(_common)
 		, m_gbuffer(_gbuffer)

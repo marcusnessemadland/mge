@@ -7,17 +7,5 @@
 
 namespace vr
 {
-	State g_state;
-
-	bool init(MainArgs)
-	{
-		g_state = State(MainArgsVars);
-		return true;
-	}
-
-	const State& getState()
-	{
-		return g_state;
-	}
-
+	
 } // namespace vr

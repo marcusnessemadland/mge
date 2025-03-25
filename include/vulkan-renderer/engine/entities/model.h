@@ -19,9 +19,10 @@ namespace vr
 	{
 		friend class Renderer;
 		friend class GBuffer;
+		friend class Scene;
 
 	public:
-		Model(std::shared_ptr<World> _world);
+		Model();
 		~Model();
 
 		///
@@ -29,9 +30,6 @@ namespace vr
 
 		/// 
 		void addMesh(std::shared_ptr<Mesh> _mesh);
-
-	private:
-		std::vector<Mesh*> m_meshes;
 	};
 
 } // namespace vr

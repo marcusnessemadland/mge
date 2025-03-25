@@ -12,7 +12,7 @@ namespace vr
 		: m_primitive(_primitive)
 		, m_vertices(_vertices)
 		, m_indices(_indices)
-		, m_material(NULL)
+		, m_material(nullptr)
 	{
 		m_vbh = bgfx::createVertexBuffer(
 			bgfx::makeRef(m_vertices.data(), (uint32_t)(sizeof(Vertex) * m_vertices.size())),
