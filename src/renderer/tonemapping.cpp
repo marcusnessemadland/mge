@@ -14,6 +14,7 @@
 
 #include <bgfx/embedded_shader.h>
 #include <bx/bx.h>
+#include <optick.h>
 
 namespace vr
 {
@@ -78,6 +79,8 @@ namespace vr
 
 	void ToneMapping::render()
 	{
+		OPTICK_EVENT();
+
 		if (m_common->firstFrame)
 		{
 			destroyScreenBuffer();

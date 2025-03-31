@@ -51,6 +51,7 @@ set(BGFX_BUILD_TOOLS_GEOMETRY OFF)
 set(BGFX_BUILD_TOOLS_TEXTURE OFF)
 set(BGFX_BUILD_EXAMPLES OFF)
 set(BGFX_BUILD_EXAMPLE_COMMON OFF)
+target_compile_definitions(${PROJECT_NAME} PUBLIC BGFX_CONFIG_PROFILER=1)
 
 add_subdirectory(3rdparty/bgfx)
 target_link_libraries(${PROJECT_NAME} PUBLIC bgfx bx bimg bimg_decode)
@@ -74,6 +75,14 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     )
 set_target_properties(SDL_uclibc PROPERTIES FOLDER "vulkan-renderer/3rdparty/sdl")
 set_target_properties(SDL3-shared PROPERTIES FOLDER "vulkan-renderer/3rdparty/sdl")
+
+# 3rdparty (optick)
+add_subdirectory(3rdparty/optick)
+target_link_libraries(${PROJECT_NAME} PUBLIC OptickCore)
+target_include_directories(${PROJECT_NAME} PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/optick/src
+    )
+set_target_properties(OptickCore PROPERTIES FOLDER "vulkan-renderer/3rdparty/optick")
 
 # Shaders
 include(CMakeParseArguments)

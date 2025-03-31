@@ -10,18 +10,27 @@
 #include "engine/scene.h"
 
 #include <bgfx/bgfx.h> // time
+#include <optick.h> // event
 
 #include <cassert>
 
 namespace vr {
 
 	World::World()
-		: m_camera(nullptr)
+		: m_world(nullptr)
+		, m_camera(nullptr)
 	{
 	}
 
 	void World::update()
 	{
+		OPTICK_EVENT();
+
+		if (m_world == nullptr)
+		{
+			m_world = shared_from_this();
+		}
+
 		const bgfx::Stats* stats = bgfx::getStats();
 
 		const double toMsCpu = 1000.0 / stats->cpuTimerFreq;
@@ -40,8 +49,10 @@ namespace vr {
 
 	void World::render(std::shared_ptr<Renderer> _renderer)
 	{
+		OPTICK_EVENT();
+
 		assert(m_camera != nullptr); 
-		_renderer->render(shared_from_this(), m_camera);
+		_renderer->render(m_world, m_camera);
 	}
 
 	std::shared_ptr<Camera> World::makeCamera(Projection::Enum _mode)

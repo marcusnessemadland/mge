@@ -26,6 +26,7 @@ namespace vr
 		};
 	};
 
+	struct BgfxCallback;
 	class Window;
 	class Camera;
 	class Model;
@@ -59,5 +60,7 @@ namespace vr
 		std::shared_ptr<ToneMapping> m_tonemapping;
 
 		std::shared_ptr<World> m_world;
+		
+		std::unique_ptr<BgfxCallback> m_callback;
 	};
 }

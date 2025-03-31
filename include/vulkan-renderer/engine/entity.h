@@ -6,18 +6,22 @@
 #pragma once
 
 #include "engine/math.h"
+#include "engine/component.h"
 
 #include <memory>
-#include <vector>
+#include <string>
 #include <utility>
 #include <type_traits>
+#include <unordered_map>
+#include <typeinfo>
 
 namespace vr
 {
 	class World;
-	class ComponentI;
+	class Component;
 
-	class Entity
+	// @todo Rename Object / Actor or something else
+	class Entity : public std::enable_shared_from_this<Entity>
 	{
 		friend class World;
 		friend class GBuffer;
@@ -58,27 +62,37 @@ namespace vr
 		template<typename T, typename... Args>
 		void addComponent(Args&&... _args)
 		{
-			static_assert(std::is_base_of<ComponentI, T>::value, 
-				"T must be a subclass of ComponentI");
-			m_components.push_back(std::make_shared<T>(std::forward<Args>(_args)...));
+			static_assert(std::is_base_of<Component, T>::value, 
+				"T must be a subclass of Component");
+
+			const char* name = typeid(T).name();
+
+			auto it = m_components.find(name);
+			if (it != m_components.end())
+			{
+				// @todo Assert
+				return;
+			}
+
+			m_components[name] = std::make_shared<T>(std::forward<Args>(_args)...);
+			m_components[name]->m_owner = shared_from_this();
 		}
 
 		template<typename T>
-		std::vector<std::shared_ptr<T>> getAllComponents() const
+		std::shared_ptr<T> getComponent() const
 		{
-			static_assert(std::is_base_of<ComponentI, T>::value,
-				"T must be a subclass of ComponentI");
+			static_assert(std::is_base_of<Component, T>::value,
+				"T must be a subclass of Component");
 
-			std::vector<std::shared_ptr<T>> matchingComponents;
-			for (const auto& component : m_components)
+			const char* name = typeid(T).name();
+
+			auto it = m_components.find(name);
+			if (it != m_components.end())
 			{
-				auto castedComponent = std::dynamic_pointer_cast<T>(component);
-				if (castedComponent)
-				{
-					matchingComponents.push_back(castedComponent);
-				}
+				return std::static_pointer_cast<T>(it->second);
 			}
-			return matchingComponents;
+
+			return nullptr;
 		}
 
 	private:
@@ -86,7 +100,7 @@ namespace vr
 		Quat m_rotation;
 		Vec3 m_scale;
 
-		std::vector<std::shared_ptr<ComponentI>> m_components;
+		std::unordered_map<std::string, std::shared_ptr<Component>> m_components;
 	};
 
 	/// 

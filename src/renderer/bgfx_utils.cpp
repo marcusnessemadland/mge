@@ -201,6 +201,18 @@ namespace bx {
 		mtxTranspose(_result, cof);
 	}
 
+	void mtxSRT(float* _result, const vr::Vec3& _pos, const vr::Quat& _rotation, const vr::Vec3& _scale)
+	{
+		float scaleMtx[16], rotationMtx[16], translationMtx[16];
+		bx::mtxScale(scaleMtx, _scale.x, _scale.y, _scale.z);
+		bx::mtxFromQuaternion(rotationMtx, vr::toBgfxQuat(_rotation));
+		bx::mtxTranslate(translationMtx, _pos.x, _pos.y, _pos.z);
+
+		float temp[16];
+		bx::mtxMul(temp, scaleMtx, rotationMtx);
+		bx::mtxMul(_result, temp, translationMtx);
+	}
+
 } // namespace bx
 
 namespace bgfx

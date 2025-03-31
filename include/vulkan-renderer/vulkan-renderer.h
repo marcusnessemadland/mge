@@ -26,6 +26,7 @@
 
 ///
 #include "engine/components/mesh_component.h"
+#include "engine/components/camera_fly_component.h"
 
 ///
 void _main_(int argc, const char** argv);

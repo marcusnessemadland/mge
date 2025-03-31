@@ -10,6 +10,7 @@
 #include "engine/entities/model.h"
 #include "engine/components/mesh_component.h"
 #include "engine/world.h"
+#include "engine/scene.h"
 #include "engine/mesh.h"
 #include "engine/renderer.h"
 #include "engine/material.h"
@@ -22,6 +23,7 @@
 #include <bgfx/embedded_shader.h>
 #include <bx/bx.h>
 #include <bx/math.h>
+#include <optick.h>
 
 namespace vr
 {
@@ -58,6 +60,29 @@ namespace vr
 			// Textures are destroyed with it
 			bgfx::destroy(m_framebuffer); 
 		}
+	}
+
+	void GBuffer::setUniforms()
+	{
+		// Normal matrix
+		// https://github.com/graphitemaster/normals_revisited#the-details-of-transforming-normals
+		// @todo Should add support in instancing data? Together with transform.
+
+		float identity[16];
+		bx::mtxIdentity(identity);
+
+		float normalMat[16];
+		bx::mtxAdjugate(normalMat, identity);
+
+		float normalMat3[9];
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				normalMat3[i * 3 + j] = normalMat[i * 4 + j];
+			}
+		}
+		bgfx::setUniform(m_normalMatrixUniform, normalMat3);
 	}
 
 	void GBuffer::setMaterial(std::shared_ptr<Material> _material)
@@ -122,95 +147,50 @@ namespace vr
 		return valid;
 	}
 
-	void GBuffer::submit(std::shared_ptr<World> _world)
+	void GBuffer::submit(std::shared_ptr<Model> _model)
 	{
-		for (auto& entity : _world->m_entities)
+		float mtx[16];
+		bx::mtxSRT(mtx, _model->getPosition(), _model->getRotation(), _model->getScale());
+
+		if (std::shared_ptr<MeshComponent> meshComp = _model->getComponent<MeshComponent>())
 		{
-			auto model = std::dynamic_pointer_cast<Model>(entity);
-			if (model == nullptr)
+			std::shared_ptr<Mesh> mesh = meshComp->m_mesh;
+
+			for (auto& submesh : mesh->m_submeshes)
 			{
-				continue;
-			}
-
-			// SRT
-			float scaleMtx[16], rotationMtx[16], translationMtx[16];
-			Vec3 position = model->getPosition();
-			Quat rotation = model->getRotation();
-			Vec3 scale = model->getScale();
-
-			bx::mtxScale(scaleMtx, scale.x, scale.y, scale.z);
-			bx::mtxFromQuaternion(rotationMtx, toBgfxQuat(rotation));
-			bx::mtxTranslate(translationMtx, position.x, position.y, position.z);
-
-			float mtx[16];
-			float temp[16];
-			bx::mtxMul(temp, rotationMtx, scaleMtx);
-			bx::mtxMul(mtx, translationMtx, temp);
-
-			for (auto& component : model->m_components)
-			{
-				std::shared_ptr<MeshComponent> meshComp = std::dynamic_pointer_cast<MeshComponent>(component);
-				if (meshComp == nullptr)
-				{
-					continue;
-				}
-
-				std::shared_ptr<Mesh> mesh = meshComp->m_mesh;
-
-				// Normal matrix
-				// https://github.com/graphitemaster/normals_revisited#the-details-of-transforming-normals
-				
-				float identity[16];
-				bx::mtxIdentity(identity);
-
-				float normalMat[16];
-				bx::mtxAdjugate(normalMat, identity);
-
-				float normalMat3[9];
-				for (int i = 0; i < 3; ++i)
-				{
-					for (int j = 0; j < 3; ++j)
-					{
-						normalMat3[i * 3 + j] = normalMat[i * 4 + j];
-					}
-				}
-				bgfx::setUniform(m_normalMatrixUniform, normalMat3);
+				// State
+				uint64_t state = 0
+					| BGFX_STATE_WRITE_RGB
+					| BGFX_STATE_WRITE_A
+					| BGFX_STATE_WRITE_Z
+					| BGFX_STATE_DEPTH_TEST_LESS;
 
 				// Material
-				setMaterial(mesh->m_material);
-
-				uint64_t state = 0 
-					| BGFX_STATE_WRITE_RGB 
-					| BGFX_STATE_WRITE_A 
-					| BGFX_STATE_WRITE_Z 
-					| BGFX_STATE_DEPTH_TEST_LESS 
-					| BGFX_STATE_MSAA;
-
-				if (mesh->m_material != nullptr)
+				if (submesh->m_material)
 				{
-					if (mesh->m_material->blend)
+					setMaterial(submesh->m_material);
+					if (submesh->m_material != nullptr)
 					{
-						state |= BGFX_STATE_BLEND_ALPHA;
-					}
-					if (!mesh->m_material->doubleSided)
-					{
-						state |= BGFX_STATE_CULL_CW;
+						if (submesh->m_material->blend)
+						{
+							state |= BGFX_STATE_BLEND_ALPHA;
+						}
+						if (!submesh->m_material->doubleSided)
+						{
+							state |= BGFX_STATE_CULL_CW;
+						}
 					}
 				}
+
+				// Uniforms
+				setUniforms();
 
 				// Submit
 				bgfx::setState(state);
 				bgfx::setTransform(mtx);
 				bgfx::setVertexBuffer(0, mesh->m_vbh);
-				bgfx::setIndexBuffer(mesh->m_ibh);
-				bgfx::submit(
-					m_view,
-					m_program,
-					0,
-					BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS
-				);
-
-				bgfx::discard();
+				bgfx::setIndexBuffer(submesh->m_ibh);
+				bgfx::submit(m_view, m_program);
 			}
 		}
 	}
@@ -268,6 +248,8 @@ namespace vr
 
 	void GBuffer::render(std::shared_ptr<World> _world)
 	{
+		OPTICK_EVENT();
+
 		// Recreate gbuffer upon reset. 
 		if (m_common->firstFrame)
 		{
@@ -282,6 +264,20 @@ namespace vr
 		bgfx::setViewTransform(m_view, m_common->view, m_common->proj);
 
 		// Submit
-		submit(_world);
+		for (auto& entity : _world->m_entities)
+		{
+			if (std::shared_ptr<Scene> scene = std::dynamic_pointer_cast<Scene>(entity))
+			{
+				for (auto& pair : scene->m_models)
+				{
+					submit(pair.second);
+				}
+			}
+
+			if (std::shared_ptr<Model> model = std::dynamic_pointer_cast<Model>(entity))
+			{
+				submit(model);
+			}
+		}
 	}
 }

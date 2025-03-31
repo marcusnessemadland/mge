@@ -14,15 +14,30 @@
 
 namespace vr
 {
-	struct Primitive
-	{
-		enum Enum
-		{
-			Triangles,
-		};
-	};
-
 	class Material;
+	class Entity;
+
+	class SubMesh
+	{
+		friend class Renderer;
+		friend class GBuffer;
+		friend class Scene;
+
+	public:
+		SubMesh(const std::vector<uint32_t>& _indices, std::shared_ptr<Material> _material = NULL);
+		~SubMesh();
+
+		/// 
+		friend std::shared_ptr<SubMesh> createSubMesh(const std::vector<uint32_t>& _indices, std::shared_ptr<Material> _material = NULL);
+
+		/// 
+		void setMaterial(std::shared_ptr<Material> _material);
+
+	private:
+		bgfx::IndexBufferHandle m_ibh;
+		std::vector<uint32_t> m_indices;
+		std::shared_ptr<Material> m_material;
+	};
 
 	class Mesh
 	{
@@ -31,22 +46,26 @@ namespace vr
 		friend class Scene;
 
 	public:
-		Mesh(const Primitive::Enum _primitive, const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices);
+		Mesh(const std::vector<Vertex>& _vertices, const std::vector<std::shared_ptr<SubMesh>>& _submeshes);
+		Mesh(const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices);
 		~Mesh();
 
 		///
-		friend std::shared_ptr<Mesh> createMesh(const Primitive::Enum _primitive, const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices);
-	
+		friend std::shared_ptr<Mesh> createMesh(const std::vector<Vertex>& _vertices, const std::vector<std::shared_ptr<SubMesh>>& _submeshes);
+
+		///
+		friend std::shared_ptr<Mesh> createMesh(const std::vector<Vertex>& _vertices, const std::vector<uint32_t>& _indices);
+
 		///
 		void setMaterial(std::shared_ptr<Material> _material);
+		
+		/// _idx = subMesh idx
+		void setMaterial(std::shared_ptr<Material> _material, uint32_t _idx);
 
 	private:
-		Primitive::Enum m_primitive;
-		std::vector<Vertex> m_vertices;
-		std::vector<uint32_t> m_indices;
 		bgfx::VertexBufferHandle m_vbh;
-		bgfx::IndexBufferHandle m_ibh;
-		std::shared_ptr<Material> m_material;
+		std::vector<Vertex> m_vertices;
+		std::vector<std::shared_ptr<SubMesh>> m_submeshes;
 	};
 
 } // namespace vr

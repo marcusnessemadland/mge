@@ -17,6 +17,7 @@
 #include "bgfx_utils.h"
 #include <bgfx/bgfx.h>
 #include <bx/timer.h>
+#include <optick.h>
 
 #include <algorithm>
 
@@ -24,6 +25,8 @@ namespace vr
 {
 	void Renderer::update(std::shared_ptr<World> _world, std::shared_ptr<Camera> _camera)
 	{
+		OPTICK_EVENT();
+
 		const bgfx::Caps* caps = bgfx::getCaps();
 
 		// Update world
@@ -69,7 +72,7 @@ namespace vr
 					_camera->m_near,
 					_camera->m_far,
 					caps->homogeneousDepth,
-					bx::Handedness::Right // Matches autodesk Maya
+					bx::Handedness::Right // Matches Autodesk Maya
 				);
 			}
 			else
@@ -86,7 +89,7 @@ namespace vr
 					_camera->m_far,
 					0.0f,
 					caps->homogeneousDepth,
-					bx::Handedness::Right // Matches autodesk Maya
+					bx::Handedness::Right // Matches Autodesk Maya
 				);
 			}
 		}
@@ -94,11 +97,15 @@ namespace vr
 
 	void Renderer::postUpdate()
 	{
+		OPTICK_EVENT();
+
 		m_common->firstFrame = false;
 	}
 
 	void Renderer::render(std::shared_ptr<World> _world, std::shared_ptr<Camera> _camera)
 	{
+		OPTICK_EVENT();
+
 		//
 		bgfx::dbgTextClear();
 
@@ -138,10 +145,14 @@ namespace vr
 		if (_type == RendererType::Vulkan) type = bgfx::RendererType::Vulkan;
 		if (_type == RendererType::Direct3D12) type = bgfx::RendererType::Direct3D12;
 
+		// Callback
+		m_callback = std::make_unique<BgfxCallback>();
+
 		// Init
 		bgfx::Init init;
 		init.type = type;
 		init.vendorId = BGFX_PCI_ID_NONE;
+		init.callback = m_callback.get();
 		init.platformData.nwh = _window->getNativeHandle();
 		init.platformData.ndt = nullptr;
 		init.platformData.type = bgfx::NativeWindowHandleType::Default;

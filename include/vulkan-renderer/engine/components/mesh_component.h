@@ -13,7 +13,7 @@ namespace vr
 {
 	class Mesh;
 
-	class MeshComponent : public ComponentI
+	class MeshComponent : public Component
 	{
 		friend class GBuffer;
 		friend class Scene;

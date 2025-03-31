@@ -27,6 +27,8 @@ namespace vr
     };
 
     class World;
+    class Model;
+    class Scene;
     class Material;
     class Texture;
 
@@ -39,9 +41,10 @@ namespace vr
         void createFramebuffer();
         void destroyFramebuffer();
 
+        void setUniforms();
         void setMaterial(std::shared_ptr<Material> _material);
         bool setTextureOrDefault(uint8_t stage, bgfx::UniformHandle uniform, std::shared_ptr<Texture> texture);
-        void submit(std::shared_ptr<World> _world);
+        void submit(std::shared_ptr<Model> _model);
 
 	public:
 		GBuffer(bgfx::ViewId _view, std::shared_ptr<CommonResources> _common);

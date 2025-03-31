@@ -6,6 +6,8 @@
 #include "engine/window.h"
 #include "vulkan-renderer.h"
 
+#include <optick.h> // OPTICK_FRAME
+
 #ifdef SDL_PLATFORM_WIN32
 
 #include <Windows.h>
@@ -86,44 +88,46 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 namespace vr
 {
-	Window::Window(const char* _title, uint32_t _width, uint32_t _height, SDL_WindowFlags _flags)
-	{
+    Window::Window(const char* _title, uint32_t _width, uint32_t _height, SDL_WindowFlags _flags)
+    {
         SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD);
         window = SDL_CreateWindow(_title, _width, _height, _flags);
         running = true;
 
-        SDL_SetWindowRelativeMouseMode(window, true); 
+        SDL_SetWindowRelativeMouseMode(window, true);
         SDL_SetHintWithPriority(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "1", SDL_HINT_OVERRIDE);
-	}
+    }
 
-	Window::~Window()
-	{
-		if (window)
-		{
-			SDL_DestroyWindow(window);
-		}
-		SDL_Quit();
-	}
+    Window::~Window()
+    {
+        if (window)
+        {
+            SDL_DestroyWindow(window);
+        }
+        SDL_Quit();
+    }
 
-	std::shared_ptr<Window> createWindow(const char* _title, uint32_t _width, uint32_t _height, SDL_WindowFlags _flags)
-	{
-		return std::make_shared<Window>(_title, _width, _height, _flags);
-	}
+    std::shared_ptr<Window> createWindow(const char* _title, uint32_t _width, uint32_t _height, SDL_WindowFlags _flags)
+    {
+        return std::make_shared<Window>(_title, _width, _height, _flags);
+    }
 
-	void* Window::getNativeHandle()
-	{
+    void* Window::getNativeHandle()
+    {
 #if defined(SDL_PLATFORM_WIN32)
-		if (HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL))
-		{
-			return hwnd;
-		}
+        if (HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL))
+        {
+            return hwnd;
+        }
 #endif
 
-		return nullptr;
-	}
+        return nullptr;
+    }
 
-	bool Window::isClosed()
-	{
+    bool Window::isClosed()
+    {
+        OPTICK_FRAME("MainThread");
+
         SDL_Event event;
         while (SDL_PollEvent(&event)) // Poll all events
         {
@@ -133,8 +137,8 @@ namespace vr
             }
         }
 
-		return !running;
-	}
+        return !running;
+    }
 
     bool Window::isKeyDown(SDL_Scancode _code)
     {
@@ -168,19 +172,18 @@ namespace vr
         return SDL_GetWindowFlags(window);
     }
 
-	uint32_t Window::getWidth()
-	{
-		int w, h;
-		SDL_GetWindowSize(window, &w, &h);
-		return w;
-	}
+    uint32_t Window::getWidth()
+    {
+        int w, h;
+        SDL_GetWindowSize(window, &w, &h);
+        return w;
+    }
 
-	uint32_t Window::getHeight()
-	{
-		int w, h;
-		SDL_GetWindowSize(window, &w, &h);
-		return h;
-	}
+    uint32_t Window::getHeight()
+    {
+        int w, h;
+        SDL_GetWindowSize(window, &w, &h);
+        return h;
+    }
 
 } // namespace vr
-

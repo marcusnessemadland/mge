@@ -51,6 +51,7 @@ namespace vr
 		std::shared_ptr<Camera> makeCamera(Projection::Enum _mode);
 
 	private:
+		std::shared_ptr<World> m_world;
 		std::shared_ptr<Camera> m_camera; // @todo Turn into entity
 		std::vector<std::shared_ptr<Entity>> m_entities;
 

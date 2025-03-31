@@ -7,3 +7,6 @@
 [submodule "3rdparty/sdl"]
 	path = 3rdparty/sdl
 	url = https://github.com/libsdl-org/SDL.git
+[submodule "3rdparty/optick"]
+	path = 3rdparty/optick
+	url = https://github.com/bombomby/optick.git

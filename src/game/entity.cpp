@@ -13,7 +13,7 @@ namespace vr
     {
         for (auto& component : m_components)
         {
-            component->preUpdate(_dt);
+            component.second->preUpdate(_dt);
         }
     }
 
@@ -21,7 +21,7 @@ namespace vr
     {
         for (auto& component : m_components)
         {
-            component->postUpdate(_dt);
+            component.second->postUpdate(_dt);
         }
     }
 
