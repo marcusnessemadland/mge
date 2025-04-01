@@ -16,6 +16,7 @@
 #include <optick.h>
 
 #include <cassert>
+#include <filesystem>
 
 namespace vr 
 {
@@ -116,12 +117,22 @@ namespace vr
 		std::shared_ptr<Material> material = m_materials[_material.name];
 
 		// Textures
-		material->setColor(loadTexture(_material.baseColorTexture));
-		material->setMetallic(loadTexture(_material.metallicTexture));
-		material->setRoughness(loadTexture(_material.roughnessTexture));
-		material->setNormal(loadTexture(_material.normalTexture));
-		material->setOcclusion(loadTexture(_material.occlusionTexture));
-		material->setEmissive(loadTexture(_material.emissiveTexture));
+		std::string sceneName = std::filesystem::path(m_filepath).stem().string();
+		std::string resourcePath = "scenes/" + sceneName + "/";
+		
+		std::string baseColorTexture = std::filesystem::path(_material.baseColorTexture).filename().string();
+		std::string metallicTexture = std::filesystem::path(_material.metallicTexture).filename().string();
+		std::string roughnessTexture = std::filesystem::path(_material.roughnessTexture).filename().string();
+		std::string normalTexture = std::filesystem::path(_material.normalTexture).filename().string();
+		std::string occlusionTexture = std::filesystem::path(_material.occlusionTexture).filename().string();
+		std::string emissiveTexture = std::filesystem::path(_material.emissiveTexture).filename().string();
+		
+		material->setColor(loadTexture((resourcePath + baseColorTexture).c_str()));
+		material->setMetallic(loadTexture((resourcePath + metallicTexture).c_str()));
+		material->setRoughness(loadTexture((resourcePath + roughnessTexture).c_str()));
+		material->setNormal(loadTexture((resourcePath + normalTexture).c_str()));
+		material->setOcclusion(loadTexture((resourcePath + occlusionTexture).c_str()));
+		material->setEmissive(loadTexture((resourcePath + emissiveTexture).c_str()));
 
 		// Factors
 		material->setColor(Vec3(_material.baseColorFactor[0], _material.baseColorFactor[1], _material.baseColorFactor[2]));
