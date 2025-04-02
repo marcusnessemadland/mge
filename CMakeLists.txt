@@ -1,6 +1,6 @@
 # Project Info
 cmake_minimum_required(VERSION 3.10.2) #3.18
-project(vulkan-renderer)
+project(mge)
 cmake_policy(VERSION 3.18)
 
 # CMake Settings
@@ -39,7 +39,7 @@ add_library(
 target_include_directories(
     ${PROJECT_NAME} 
     PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan-renderer/
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/mge/
     ${CMAKE_CURRENT_SOURCE_DIR}/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/src/
     )
@@ -63,21 +63,21 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/bgfx/bgfx/include
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/bgfx/bx/include
     )
-set_target_properties(bgfx PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx")
-set_target_properties(bimg PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx")
-set_target_properties(bimg_decode PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx")
-set_target_properties(bimg_encode PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx")
-set_target_properties(bx PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx")
-set_target_properties(fcpp PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx/3rdparty")
-set_target_properties(glslang PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx/3rdparty")
-set_target_properties(glsl-optimizer PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx/3rdparty")
-set_target_properties(spirv-cross PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx/3rdparty")
-set_target_properties(spirv-opt PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx/3rdparty")
-set_target_properties(bin2c PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx/tools")
-set_target_properties(shaderc PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx/tools")
-set_target_properties(tools PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx/tools")
-set_target_properties(example-common PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx/examples")
-set_target_properties(examples PROPERTIES FOLDER "vulkan-renderer/3rdparty/bgfx/examples")
+set_target_properties(bgfx PROPERTIES FOLDER "mge/3rdparty/bgfx")
+set_target_properties(bimg PROPERTIES FOLDER "mge/3rdparty/bgfx")
+set_target_properties(bimg_decode PROPERTIES FOLDER "mge/3rdparty/bgfx")
+set_target_properties(bimg_encode PROPERTIES FOLDER "mge/3rdparty/bgfx")
+set_target_properties(bx PROPERTIES FOLDER "mge/3rdparty/bgfx")
+set_target_properties(fcpp PROPERTIES FOLDER "mge/3rdparty/bgfx/3rdparty")
+set_target_properties(glslang PROPERTIES FOLDER "mge/3rdparty/bgfx/3rdparty")
+set_target_properties(glsl-optimizer PROPERTIES FOLDER "mge/3rdparty/bgfx/3rdparty")
+set_target_properties(spirv-cross PROPERTIES FOLDER "mge/3rdparty/bgfx/3rdparty")
+set_target_properties(spirv-opt PROPERTIES FOLDER "mge/3rdparty/bgfx/3rdparty")
+set_target_properties(bin2c PROPERTIES FOLDER "mge/3rdparty/bgfx/tools")
+set_target_properties(shaderc PROPERTIES FOLDER "mge/3rdparty/bgfx/tools")
+set_target_properties(tools PROPERTIES FOLDER "mge/3rdparty/bgfx/tools")
+set_target_properties(example-common PROPERTIES FOLDER "mge/3rdparty/bgfx/examples")
+set_target_properties(examples PROPERTIES FOLDER "mge/3rdparty/bgfx/examples")
 
 # 3rdparty (sdl) STATIC
 set(SDL_SHARED_DEFAULT OFF)
@@ -88,8 +88,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3)
 target_include_directories(${PROJECT_NAME} PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/sdl/include
     )
-set_target_properties(SDL_uclibc PROPERTIES FOLDER "vulkan-renderer/3rdparty/sdl")
-set_target_properties(SDL3-shared PROPERTIES FOLDER "vulkan-renderer/3rdparty/sdl")
+set_target_properties(SDL_uclibc PROPERTIES FOLDER "mge/3rdparty/sdl")
+set_target_properties(SDL3-shared PROPERTIES FOLDER "mge/3rdparty/sdl")
 
 # 3rdparty (optick) SHARED
 add_subdirectory(3rdparty/optick)
@@ -97,7 +97,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC OptickCore)
 target_include_directories(${PROJECT_NAME} PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/optick/src
     )
-set_target_properties(OptickCore PROPERTIES FOLDER "vulkan-renderer/3rdparty/optick")
+set_target_properties(OptickCore PROPERTIES FOLDER "mge/3rdparty/optick")
 
 # 3rdparty (maya-bridge) INCLUDED
 target_include_directories(${PROJECT_NAME} PUBLIC 
@@ -151,5 +151,5 @@ bgfx_compile_shaders(
 # Preprocessor Definitions
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 
-# Put in a "vulkan-renderer" folder in Visual Studio
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "vulkan-renderer")
+# Put in a "mge" folder in Visual Studio
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "mge")
