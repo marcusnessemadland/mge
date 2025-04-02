@@ -13,6 +13,7 @@
 #include "common_resources.h"
 #include "gbuffer.h"
 #include "tonemapping.h"
+#include "imgui.h"
 
 #include "bgfx_utils.h"
 #include <bgfx/bgfx.h>
@@ -122,6 +123,7 @@ namespace vr
 		// Render
 		m_gbuffer->render(_world);
 		m_tonemapping->render();
+		m_imgui->render();
 
 		// Update common resources after rendering
 		postUpdate();
@@ -130,7 +132,7 @@ namespace vr
 		bgfx::frame();
 	}
 
-	Renderer::Renderer(std::shared_ptr<Window> _window, RendererType::Enum _type)
+	Renderer::Renderer(std::shared_ptr<Window> _window, bgfx::RendererType::Enum _type)
 		: m_window(_window)
 		, m_world(nullptr)
 	{
@@ -139,18 +141,12 @@ namespace vr
 		m_common->width = m_window->getWidth();
 		m_common->height = m_window->getHeight();
 
-		// Type
-		bgfx::RendererType::Enum type = bgfx::RendererType::Count;
-		if (_type == RendererType::OpenGL) type = bgfx::RendererType::OpenGL;
-		if (_type == RendererType::Vulkan) type = bgfx::RendererType::Vulkan;
-		if (_type == RendererType::Direct3D12) type = bgfx::RendererType::Direct3D12;
-
 		// Callback
 		m_callback = std::make_unique<BgfxCallback>();
 
 		// Init
 		bgfx::Init init;
-		init.type = type;
+		init.type = _type;
 		init.vendorId = BGFX_PCI_ID_NONE;
 		init.callback = m_callback.get();
 		init.platformData.nwh = _window->getNativeHandle();
@@ -166,6 +162,7 @@ namespace vr
 		// Techniques
 		m_gbuffer = std::make_shared<GBuffer>(0, m_common);
 		m_tonemapping = std::make_shared<ToneMapping>(1, m_common, m_gbuffer);
+		m_imgui = std::make_shared<Imgui>(255, m_common, m_window);
 
 		// Layouts
 		Vertex::init();
@@ -184,12 +181,13 @@ namespace vr
 		m_common.reset();
 		m_gbuffer.reset();
 		m_tonemapping.reset();
+		m_imgui.reset();
 
 		// Shutdown
 		bgfx::shutdown();
 	}
 
-	std::shared_ptr<Renderer> createRenderer(std::shared_ptr<Window> _window, RendererType::Enum _type)
+	std::shared_ptr<Renderer> createRenderer(std::shared_ptr<Window> _window, bgfx::RendererType::Enum _type)
 	{
 		return std::make_shared<Renderer>(_window, _type);
 	}

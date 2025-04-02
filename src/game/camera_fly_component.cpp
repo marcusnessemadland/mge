@@ -9,44 +9,8 @@
 
 namespace vr
 {
-    Vec3 CameraFlyComponent::getMoveInput()
-    {
-        Vec3 input(0.0f, 0.0f, 0.0f);
-        if (m_window->isKeyDown(SDL_SCANCODE_W))
-        {
-            input.z -= 1.0f;
-        }
-        if (m_window->isKeyDown(SDL_SCANCODE_S))
-        {
-            input.z += 1.0f;
-        }
-        if (m_window->isKeyDown(SDL_SCANCODE_D))
-        {
-            input.x += 1.0f;
-        }
-        if (m_window->isKeyDown(SDL_SCANCODE_A))
-        {
-            input.x -= 1.0f;
-        }
-        input = normalize(input);
-
-        if (m_window->isKeyDown(SDL_SCANCODE_LSHIFT))
-        {
-            input = input * 3.0f;
-        }
-        return input;
-    }
-
-    Vec2 CameraFlyComponent::getLookInput()
-    {
-        Vec2 delta;
-        m_window->getRelativeMouseState(&delta.x, &delta.y);
-        return delta * -1.0f;
-    }
-
-	CameraFlyComponent::CameraFlyComponent(std::shared_ptr<Window> _window, std::shared_ptr<Camera> _camera)
-		: m_window(_window)
-		, m_camera(_camera)
+	CameraFlyComponent::CameraFlyComponent(std::shared_ptr<Camera> _camera)
+		: m_camera(_camera)
 		, m_pitch(0.0f)
 		, m_yaw(0.0f)
 		, m_smoothPitch(0.0f)
@@ -54,12 +18,10 @@ namespace vr
 		, m_position(_camera->getPosition())
 		, m_smoothPosition(_camera->getPosition())
 	{
-        m_window->setCursorVisible(false);
 	}
 
 	CameraFlyComponent::~CameraFlyComponent()
 	{
-        m_window->setCursorVisible(true);
 	}
 
 	void CameraFlyComponent::preUpdate(double _dt)
@@ -69,10 +31,10 @@ namespace vr
         const float speed = 5000.0f;
         const float sensitivity = 0.1f;
         const float smoothFactorPosition = 3.0f;  // Lower values will make the smoothing slower (more inertia)
-        const float smoothFactorRotation = 10.0f;  // Higher value means faster interpolation
+        const float smoothFactorRotation = 10.0f; // Higher value means faster interpolation
 
-        Vec3 moveInput = getMoveInput() * speed * dt;
-        Vec2 lookInput = getLookInput() * sensitivity;
+        Vec3 moveInput = m_moveInput * speed * dt;
+        Vec2 lookInput = m_lookInput * sensitivity;
 
         m_yaw += lookInput.x;
         m_pitch -= lookInput.y;
@@ -89,7 +51,7 @@ namespace vr
 
         Vec3 right = cross(forward, Vec3(0.0f, 1.0f, 0.0f));
 
-        Vec3 targetVelocity = forward * moveInput.z + right * -moveInput.x;
+        Vec3 targetVelocity = forward * moveInput.z + right * -moveInput.x + Vec3(0.0f, 1.0f, 0.0) * moveInput.y;
 
         m_velocity = lerp(m_velocity, targetVelocity, smoothFactorPosition * dt);
 
@@ -104,5 +66,15 @@ namespace vr
 	void CameraFlyComponent::postUpdate(double _dt)
 	{
 	}
+
+    void CameraFlyComponent::setMoveInput(const Vec3& _input)
+    {
+        m_moveInput = _input;
+    }
+
+    void CameraFlyComponent::setLookInput(const Vec2& _input)
+    {
+        m_lookInput = _input;
+    }
 
 } // namespace vr

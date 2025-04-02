@@ -6,95 +6,19 @@
 #include "engine/window.h"
 #include "vulkan-renderer.h"
 
-#include <optick.h> // OPTICK_FRAME
+#define SDL_MAIN_HANDLED
+#include <sdl3/sdl_main.h>
 
-#ifdef SDL_PLATFORM_WIN32
-
-#include <Windows.h>
-
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-{
-#ifdef _DEBUG
-    AllocConsole();
-    FILE* pCout = nullptr;
-    FILE* pCerr = nullptr;
-    freopen_s(&pCout, "CONOUT$", "w+", stdout);
-    freopen_s(&pCerr, "CONOUT$", "w+", stderr);
-#endif
-
-    int argc = 0;
-    char** argv = 0;
-
-    LPWSTR* commandLineArgs = CommandLineToArgvW(GetCommandLineW(), &argc);
-    if (NULL == commandLineArgs)
-    {
-        argc = 0;
-    }
-
-    if (argc > 0)
-    {
-        argv = (char**)malloc(sizeof(char*) * argc);
-        if (argv == NULL)
-        {
-            argc = 0;
-        }
-        else
-        {
-            for (int iii = 0; iii < argc; iii++)
-            {
-                size_t wideCharLen = wcslen(commandLineArgs[iii]);
-                size_t numConverted = 0;
-
-                argv[iii] = (char*)malloc(sizeof(char) * (wideCharLen + 1));
-                if (argv[iii] != NULL)
-                {
-                    wcstombs_s(&numConverted, argv[iii], wideCharLen + 1,
-                        commandLineArgs[iii], wideCharLen + 1);
-                }
-            }
-        }
-    }
-    else
-    {
-        argv = NULL;
-    }
-
-    _main_(argc, (const char**)argv);
-
-    // Free up the items we had to allocate for the command line arguments.
-    if (argc > 0 && argv != NULL)
-    {
-        for (int iii = 0; iii < argc; iii++)
-        {
-            char* arg = argv[iii];
-            if (arg != NULL)
-            {
-                free(argv[iii]);
-            }
-        }
-        free(argv);
-    }
-
-#ifdef _DEBUG
-    FreeConsole();
-    if (pCout != nullptr) fclose(pCout);
-    if (pCerr != nullptr) fclose(pCerr);
-#endif
-
-    return 0;
-}
-
-#endif // SDL_PLATFORM_WIN32
+#include <optick.h>
 
 namespace vr
 {
     Window::Window(const char* _title, uint32_t _width, uint32_t _height, SDL_WindowFlags _flags)
+		: quit(false)
     {
         SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD);
         window = SDL_CreateWindow(_title, _width, _height, _flags);
-        running = true;
 
-        SDL_SetWindowRelativeMouseMode(window, true);
         SDL_SetHintWithPriority(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "1", SDL_HINT_OVERRIDE);
     }
 
@@ -112,42 +36,69 @@ namespace vr
         return std::make_shared<Window>(_title, _width, _height, _flags);
     }
 
-    void* Window::getNativeHandle()
-    {
-#if defined(SDL_PLATFORM_WIN32)
-        if (HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL))
-        {
-            return hwnd;
-        }
-#endif
-
-        return nullptr;
-    }
-
     bool Window::isClosed()
     {
         OPTICK_FRAME("MainThread");
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) // Poll all events
-        {
-            if (event.type == SDL_EVENT_QUIT) // Check for window close event
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
+		{
+            if (event.type == SDL_EVENT_QUIT)
+                quit = true;
+
+            auto it = pushEvents.find(event.type);
+            if (it != pushEvents.end())
             {
-                running = false;
+                for (auto& callback : it->second) 
+                {
+                    callback(event);
+                }
+            }
+		}
+
+        SDL_Update update;
+
+        auto keyboard = updateEvents.find(SDL_UPDATE_KEYBOARD);
+        if (keyboard != updateEvents.end())
+        {
+            update.keyboard.down = SDL_GetKeyboardState(nullptr);
+
+            for (auto& callback : keyboard->second)
+            {
+                callback(update);
             }
         }
 
-        return !running;
+        auto mouse = updateEvents.find(SDL_UPDATE_MOUSE);
+        if (mouse != updateEvents.end())
+        {
+            float x, y;
+            SDL_GetMouseState(&x, &y);
+            update.mouse.x = (int32_t)x;
+            update.mouse.y = (int32_t)y;
+
+            float xrel, yrel;
+            SDL_GetRelativeMouseState(&xrel, &yrel);
+            update.mouse.xrel = (int32_t)xrel;
+            update.mouse.yrel = (int32_t)yrel;
+
+            for (auto& callback : mouse->second)
+            {
+                callback(update);
+            }
+        }
+
+        return quit;
     }
 
-    bool Window::isKeyDown(SDL_Scancode _code)
+    void Window::registerEvent(uint32_t eventType, EventCallback callback)
     {
-        return SDL_GetKeyboardState(NULL)[_code];
+        pushEvents[eventType].push_back(callback);
     }
 
-    void Window::getRelativeMouseState(float* _x, float* _y)
+    void Window::registerUpdate(uint32_t updateType, UpdateCallback callback)
     {
-        SDL_GetRelativeMouseState(_x, _y);
+        updateEvents[updateType].push_back(callback);
     }
 
     void Window::setCursorVisible(bool _visible)
@@ -162,15 +113,20 @@ namespace vr
         }
     }
 
-    void Window::setFullscreen(bool _fullscreen)
+    void Window::setCursorLock(bool _lock)
     {
-        SDL_SetWindowFullscreen(window, _fullscreen);
+        SDL_SetWindowRelativeMouseMode(window, _lock);
     }
 
-    SDL_WindowFlags Window::getFlags()
+    void Window::setCursorPos(int32_t _x, int32_t _y)
     {
-        return SDL_GetWindowFlags(window);
+        SDL_WarpMouseInWindow(window, _x, _y);
     }
+
+	void Window::setFullscreen(bool _fullscreen)
+	{
+        SDL_SetWindowFullscreen(window, _fullscreen);
+	}
 
     uint32_t Window::getWidth()
     {
@@ -186,4 +142,46 @@ namespace vr
         return h;
     }
 
+    void* Window::getNativeHandle()
+    {
+#if defined(SDL_PLATFORM_WIN32)
+        return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+#elif defined(SDL_PLATFORM_MACOS)
+        return (__bridge NSWindow*) SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+#elif defined(SDL_PLATFORM_LINUX)
+        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0)
+        {
+            return (Window)SDL_GetNumberProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+        }
+        else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0)
+        {
+            /*struct wl_surface *surface*/ return (struct wl_surface*)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+        }
+#endif
+    }
+
+    void* Window::getNativeDisplayHandle()
+    {
+#if defined(SDL_PLATFORM_WIN32)
+        return NULL;
+#elif defined(SDL_PLATFORM_MACOS)
+        return NULL;
+#elif defined(SDL_PLATFORM_LINUX)
+        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0)
+        {
+            return (Display*)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+        }
+        else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0)
+        {
+            /*struct wl_display *display*/ return (struct wl_display*)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+        }
+#endif
+    }
+
 } // namespace vr
+
+int main(int _argc, const char** _argv)
+{
+    _main_(_argc, _argv);
+    return 0;
+}

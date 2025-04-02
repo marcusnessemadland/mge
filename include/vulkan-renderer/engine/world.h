@@ -28,6 +28,7 @@ namespace vr
 
 	public:
 		World();
+		~World();
 
 		/// 
 		friend std::shared_ptr<World> createWorld();

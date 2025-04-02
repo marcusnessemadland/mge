@@ -9,8 +9,8 @@
 #include "engine/renderer.h"
 #include "engine/scene.h"
 
-#include <bgfx/bgfx.h> // time
-#include <optick.h> // event
+#include <bgfx/bgfx.h>   // stats
+#include <optick.h>		 // profiling
 
 #include <cassert>
 
@@ -19,6 +19,10 @@ namespace vr {
 	World::World()
 		: m_world(nullptr)
 		, m_camera(nullptr)
+	{
+	}
+
+	World::~World()
 	{
 	}
 

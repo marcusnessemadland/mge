@@ -35,9 +35,6 @@ namespace vr
 		~Entity();
 
 		/// 
-		virtual void update(double _dt) {};
-
-		/// 
 		void setPosition(const Vec3& _position);
 
 		/// 
@@ -70,7 +67,6 @@ namespace vr
 			auto it = m_components.find(name);
 			if (it != m_components.end())
 			{
-				// @todo Assert
 				return;
 			}
 
@@ -94,6 +90,9 @@ namespace vr
 
 			return nullptr;
 		}
+
+	protected:
+		virtual void update(double _dt) {};
 
 	private:
 		Vec3 m_position;

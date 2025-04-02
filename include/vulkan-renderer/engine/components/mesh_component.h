@@ -22,6 +22,7 @@ namespace vr
 		MeshComponent(std::shared_ptr<Mesh> _mesh) : m_mesh(_mesh) {}
 		~MeshComponent() {}
 
+	protected:
 		void preUpdate(double _dt) override {}
 		void postUpdate(double _dt) override {}
 

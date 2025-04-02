@@ -17,13 +17,17 @@ namespace vr
 
 	class CameraFlyComponent : public Component
 	{
-		Vec3 getMoveInput();
-		Vec2 getLookInput();
-
 	public:
-		CameraFlyComponent(std::shared_ptr<Window> _window, std::shared_ptr<Camera> _camera);
+		CameraFlyComponent(std::shared_ptr<Camera> _camera);
 		~CameraFlyComponent();
 
+		/// 
+		void setMoveInput(const Vec3& _input);
+
+		/// 
+		void setLookInput(const Vec2& _input);
+
+	protected:
 		void preUpdate(double _dt) override;
 		void postUpdate(double _dt) override;
 

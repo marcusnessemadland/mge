@@ -15,17 +15,6 @@
 
 namespace vr
 {
-	struct RendererType
-	{
-		enum Enum
-		{
-			Auto,
-			OpenGL,
-			Direct3D12,
-			Vulkan,
-		};
-	};
-
 	struct BgfxCallback;
 	class Window;
 	class Camera;
@@ -34,6 +23,8 @@ namespace vr
 
 	struct CommonResources;
 	class GBuffer;
+	class Imgui;
+	class ToneMapping;
 
 	class Renderer
 	{
@@ -46,11 +37,11 @@ namespace vr
 		void render(std::shared_ptr<World> _world, std::shared_ptr<Camera> _camera);
 
 	public:
-		Renderer(std::shared_ptr<Window> _window, RendererType::Enum _type);
+		Renderer(std::shared_ptr<Window> _window, bgfx::RendererType::Enum _type);
 		~Renderer();
 
 		/// 
-		friend std::shared_ptr<Renderer> createRenderer(std::shared_ptr<Window> _window, RendererType::Enum _type);
+		friend std::shared_ptr<Renderer> createRenderer(std::shared_ptr<Window> _window, bgfx::RendererType::Enum _type);
 
 	private:
 		std::shared_ptr<Window> m_window;
@@ -58,6 +49,7 @@ namespace vr
 		std::shared_ptr<CommonResources> m_common;
 		std::shared_ptr<GBuffer> m_gbuffer;
 		std::shared_ptr<ToneMapping> m_tonemapping;
+		std::shared_ptr<Imgui> m_imgui;
 
 		std::shared_ptr<World> m_world;
 		
