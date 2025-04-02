@@ -3,13 +3,9 @@
  * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
-#include "engine/component.h"
+#include "mge_p.h"
 
 namespace vr
 {
-	std::shared_ptr<Entity> Component::getOwner()
-	{
-		return m_owner;
-	}
-
+	
 } // namespace vr

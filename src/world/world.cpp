@@ -1,6 +1,6 @@
 /*
  * Copyright 2025 Marcus Nesse Madland. All rights reserved.
- * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
 #include "engine/entities/model.h"
@@ -9,9 +9,7 @@
 #include "engine/renderer.h"
 #include "engine/scene.h"
 
-#include <bgfx/bgfx.h>   // stats
-#include <optick.h>		 // profiling
-
+#include <chrono>
 #include <cassert>
 
 namespace vr {
@@ -26,35 +24,38 @@ namespace vr {
 	{
 	}
 
-	void World::update()
-	{
-		OPTICK_EVENT();
+    void World::update()
+    {
+        if (m_world == nullptr)
+        {
+            m_world = shared_from_this();
+        }
 
-		if (m_world == nullptr)
-		{
-			m_world = shared_from_this();
-		}
+        static double lastTime = std::chrono::duration<double>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+        double currentTime = std::chrono::duration<double>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+        double frameMsCpu = (currentTime - lastTime) * 1000.0f;
+        lastTime = currentTime;
+        double dt = frameMsCpu * 0.001; 
 
-		const bgfx::Stats* stats = bgfx::getStats();
+        m_sdTotal.pushSample(float(frameMsCpu));
 
-		const double toMsCpu = 1000.0 / stats->cpuTimerFreq;
-		const double frameMsCpu = double(stats->cpuTimeFrame) * toMsCpu;
-		m_sampleData.pushSample(float(frameMsCpu));
+        auto startTime = std::chrono::high_resolution_clock::now();
 
-		double dt = frameMsCpu * 0.001f; // In seconds
+        for (uint32_t ii = 0; ii < m_entities.size(); ++ii)
+        {
+            m_entities[ii]->preUpdate(dt);
+            m_entities[ii]->update(dt);
+            m_entities[ii]->postUpdate(dt);
+        }
 
-		for (uint32_t ii = 0; ii < m_entities.size(); ++ii)
-		{
-			m_entities[ii]->preUpdate(dt);
-			m_entities[ii]->update(dt);
-			m_entities[ii]->postUpdate(dt);
-		}
-	}
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> updateDuration = endTime - startTime;
+
+        m_sdGame.pushSample(float(updateDuration.count() * 1000.0f));
+    }
 
 	void World::render(std::shared_ptr<Renderer> _renderer)
 	{
-		OPTICK_EVENT();
-
 		assert(m_camera != nullptr); 
 		_renderer->render(m_world, m_camera);
 	}

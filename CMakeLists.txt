@@ -50,10 +50,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     )
 
 # 3rdparty (bgfx) STATIC
-set(BGFX_BUILD_TOOLS_GEOMETRY OFF)
-set(BGFX_BUILD_TOOLS_TEXTURE OFF)
-set(BGFX_BUILD_EXAMPLES OFF)
-set(BGFX_BUILD_EXAMPLE_COMMON OFF)
+option(BGFX_BUILD_TOOLS_GEOMETRY OFF)
+option(BGFX_BUILD_TOOLS_TEXTURE OFF)
+option(BGFX_BUILD_EXAMPLES OFF)
+option(BGFX_BUILD_EXAMPLE_COMMON OFF)
 set(BGFX_LIBRARY_TYPE "STATIC")
 target_compile_definitions(${PROJECT_NAME} PUBLIC BGFX_CONFIG_PROFILER=1)
 
@@ -80,7 +80,8 @@ set_target_properties(example-common PROPERTIES FOLDER "mge/3rdparty/bgfx/exampl
 set_target_properties(examples PROPERTIES FOLDER "mge/3rdparty/bgfx/examples")
 
 # 3rdparty (sdl) STATIC
-set(SDL_SHARED_DEFAULT OFF)
+set(SDL_SHARED OFF)
+set(SDL_STATIC ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 add_subdirectory(3rdparty/sdl EXCLUDE_FROM_ALL)
@@ -89,7 +90,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/sdl/include
     )
 set_target_properties(SDL_uclibc PROPERTIES FOLDER "mge/3rdparty/sdl")
-set_target_properties(SDL3-shared PROPERTIES FOLDER "mge/3rdparty/sdl")
+set_target_properties(SDL3-static PROPERTIES FOLDER "mge/3rdparty/sdl")
 
 # 3rdparty (optick) SHARED
 add_subdirectory(3rdparty/optick)

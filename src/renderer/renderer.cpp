@@ -1,6 +1,6 @@
 /*
  * Copyright 2025 Marcus Nesse Madland. All rights reserved.
- * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
 #include "engine/renderer.h"
@@ -9,7 +9,7 @@
 #include "engine/vertex.h"
 #include "vertexpos.h"
 
-#include "vulkan-renderer.h"
+#include "mge.h"
 #include "common_resources.h"
 #include "gbuffer.h"
 #include "tonemapping.h"
@@ -18,7 +18,6 @@
 #include "bgfx_utils.h"
 #include <bgfx/bgfx.h>
 #include <bx/timer.h>
-#include <optick.h>
 
 #include <algorithm>
 
@@ -26,8 +25,6 @@ namespace vr
 {
 	void Renderer::update(std::shared_ptr<World> _world, std::shared_ptr<Camera> _camera)
 	{
-		OPTICK_EVENT();
-
 		const bgfx::Caps* caps = bgfx::getCaps();
 
 		// Update world
@@ -98,25 +95,38 @@ namespace vr
 
 	void Renderer::postUpdate()
 	{
-		OPTICK_EVENT();
-
 		m_common->firstFrame = false;
 	}
 
 	void Renderer::render(std::shared_ptr<World> _world, std::shared_ptr<Camera> _camera)
 	{
-		OPTICK_EVENT();
+		const bgfx::Stats* stats = bgfx::getStats();
 
-		//
+		const uint32_t x = stats->textWidth - 40;
+
+		const double toMsCpu = 1000.0 / stats->cpuTimerFreq;
+		const double toMsGpu = 1000.0 / stats->gpuTimerFreq;
+		m_sdCpu.pushSample(float(stats->cpuTimeEnd - stats->cpuTimeBegin) * toMsCpu);
+		m_sdGpu.pushSample(float(stats->gpuTimeEnd - stats->gpuTimeBegin) * toMsGpu);
+
 		bgfx::dbgTextClear();
+		bgfx::dbgTextPrintf(x, 1, 0x8a, " cpu(game):    ");
+		bgfx::dbgTextPrintf(x + 15, 1, 0x8a, "%.2f ms [%.2f ms] ", _world->m_sdGame.getAverage(), _world->m_sdGame.getMax());
 
-		SampleData& sampleData = _world->m_sampleData;
-		bgfx::dbgTextPrintf(1, 1, 0xf, "min: %.3fms", sampleData.getMin());
-		bgfx::dbgTextPrintf(1, 2, 0xf, "max: %.3fms", sampleData.getMax());
-		bgfx::dbgTextPrintf(1, 3, 0xf, "avg: %.3fms", sampleData.getAverage());
-		bgfx::dbgTextPrintf(1, 4, 0xf, "framerate: %.2f fps", 1000.0f / sampleData.getAverage());
-		bgfx::dbgTextPrintf(1, 5, 0xf, "gfx: %s", bgfx::getRendererName(bgfx::getRendererType()));
+		bgfx::dbgTextPrintf(x, 2, 0x8a, " cpu(render):  ");
+		bgfx::dbgTextPrintf(x + 15, 2, 0x8a, "%.2f ms [%.2f ms] ", m_sdCpu.getAverage(), m_sdCpu.getMax());
 
+		bgfx::dbgTextPrintf(x, 3, 0x8a, " gpu:          ");
+		bgfx::dbgTextPrintf(x + 15, 3, 0x8a, "%.2f ms [%.2f ms] ", m_sdGpu.getAverage(), m_sdGpu.getMax());
+
+		float framerate = 1000.0f / _world->m_sdTotal.getAverage();
+		bgfx::dbgTextPrintf(x, 4, framerate < 60 ? 0x8c : 0x8a, " framerate:     ");
+		bgfx::dbgTextPrintf(x + 15, 4, framerate < 60 ? 0x8c : 0x8a, "%.2f fps        ", framerate);
+
+		float textures = (float)stats->textureMemoryUsed / (1024.0f * 1024.0f);
+		bgfx::dbgTextPrintf(x, 5, textures > 1454 ? 0x8c : 0x8a, " textures:     ");
+		bgfx::dbgTextPrintf(x + 15, 5, textures > 1454 ? 0x8c : 0x8a, "%.2f / 1454 MiB ", textures);
+		
 		// Update common resources before rendering
 		update(_world, _camera);
 

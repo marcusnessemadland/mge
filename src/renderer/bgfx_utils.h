@@ -1,6 +1,6 @@
 /*
  * Copyright 2025 Marcus Nesse Madland. All rights reserved.
- * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
 
@@ -12,7 +12,6 @@
 #include <bimg/bimg.h>
 #include <bx/math.h>
 #include <bx/readerwriter.h>
-#include <optick.h>
 
 namespace vr
 {
@@ -45,19 +44,14 @@ namespace vr
 
 		virtual void profilerBegin(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override
 		{
-			BX_UNUSED(_abgr, _filePath, _line);
-			OPTICK_PUSH(_name);
 		}
 
 		virtual void profilerBeginLiteral(const char* _name, uint32_t _abgr, const char* _filePath, uint16_t _line) override
 		{
-			BX_UNUSED(_abgr, _filePath, _line);
-			OPTICK_PUSH(_name);
 		}
 
 		virtual void profilerEnd() override
 		{
-			OPTICK_POP();
 		}
 
 		virtual uint32_t cacheReadSize(uint64_t _id) override

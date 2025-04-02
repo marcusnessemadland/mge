@@ -1,15 +1,10 @@
 /*
  * Copyright 2025 Marcus Nesse Madland. All rights reserved.
- * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
 #include "engine/window.h"
-#include "vulkan-renderer.h"
-
-#define SDL_MAIN_HANDLED
-#include <sdl3/sdl_main.h>
-
-#include <optick.h>
+#include "mge.h"
 
 namespace vr
 {
@@ -38,8 +33,6 @@ namespace vr
 
     bool Window::isClosed()
     {
-        OPTICK_FRAME("MainThread");
-
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -120,7 +113,7 @@ namespace vr
 
     void Window::setCursorPos(int32_t _x, int32_t _y)
     {
-        SDL_WarpMouseInWindow(window, _x, _y);
+        SDL_WarpMouseInWindow(window, (float)_x, (float)_y);
     }
 
 	void Window::setFullscreen(bool _fullscreen)

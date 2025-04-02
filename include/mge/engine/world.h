@@ -1,6 +1,6 @@
 /*
  * Copyright 2025 Marcus Nesse Madland. All rights reserved.
- * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
 #pragma once
@@ -56,7 +56,8 @@ namespace vr
 		std::shared_ptr<Camera> m_camera; // @todo Turn into entity
 		std::vector<std::shared_ptr<Entity>> m_entities;
 
-		SampleData m_sampleData;
+		SampleData m_sdTotal;
+		SampleData m_sdGame;
 	};
 
 } // namespace vr

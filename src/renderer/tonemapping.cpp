@@ -1,6 +1,6 @@
 /*
  * Copyright 2025 Marcus Nesse Madland. All rights reserved.
- * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
 #include "tonemapping.h"
@@ -14,7 +14,6 @@
 
 #include <bgfx/embedded_shader.h>
 #include <bx/bx.h>
-#include <optick.h>
 
 namespace vr
 {
@@ -79,8 +78,6 @@ namespace vr
 
 	void ToneMapping::render()
 	{
-		OPTICK_EVENT();
-
 		if (m_common->firstFrame)
 		{
 			destroyScreenBuffer();

@@ -1,6 +1,6 @@
 /*
  * Copyright 2025 Marcus Nesse Madland. All rights reserved.
- * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
 #include "gbuffer.h"
@@ -23,7 +23,6 @@
 #include <bgfx/embedded_shader.h>
 #include <bx/bx.h>
 #include <bx/math.h>
-#include <optick.h>
 
 namespace vr
 {
@@ -248,8 +247,6 @@ namespace vr
 
 	void GBuffer::render(std::shared_ptr<World> _world)
 	{
-		OPTICK_EVENT();
-
 		// Recreate gbuffer upon reset. 
 		if (m_common->firstFrame)
 		{

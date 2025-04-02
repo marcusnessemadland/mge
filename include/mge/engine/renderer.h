@@ -1,11 +1,12 @@
 /*
  * Copyright 2025 Marcus Nesse Madland. All rights reserved.
- * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
 #pragma once
 
 #include "engine/math.h"
+#include "engine/sampledata.h"
 
 #include <bgfx/bgfx.h>
 
@@ -54,5 +55,8 @@ namespace vr
 		std::shared_ptr<World> m_world;
 		
 		std::unique_ptr<BgfxCallback> m_callback;
+
+		SampleData m_sdCpu;
+		SampleData m_sdGpu;
 	};
 }

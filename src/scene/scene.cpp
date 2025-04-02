@@ -1,6 +1,6 @@
 /*
  * Copyright 2025 Marcus Nesse Madland. All rights reserved.
- * License: https://github.com/marcusnessemadland/vulkan-renderer/blob/main/LICENSE
+ * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
 #include "engine/scene.h"
@@ -12,8 +12,6 @@
 #include "engine/camera.h"
 #include "engine/entities/model.h"
 #include "engine/components/mesh_component.h"
-
-#include <optick.h>
 
 #include <cassert>
 #include <filesystem>
@@ -343,7 +341,8 @@ namespace vr
 		}
 		else
 		{
-			FILE* file = fopen(_filepath, "rb");
+			FILE* file = nullptr;
+			fopen_s(&file, _filepath, "rb");
 			if (file != nullptr)
 			{
 				read(file);
@@ -359,8 +358,6 @@ namespace vr
 
 	void Scene::update(double _dt)
 	{
-		OPTICK_EVENT();
-
 		if (isUsingBridge())
 		{
 			m_writeBuffer->read(&m_shared, 
@@ -438,7 +435,8 @@ namespace vr
 	{
 		if (m_filepath != nullptr)
 		{
-			FILE* file = fopen(m_filepath, "wb");
+			FILE* file = nullptr;
+			fopen_s(&file, m_filepath, "wb");
 			assert(file != NULL);
 			write(file);
 			fclose(file);
