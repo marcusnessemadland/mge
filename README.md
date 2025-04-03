@@ -7,7 +7,7 @@
     <a href="#license-apache-2">License</a>
 </p>
 
-[![License](https://img.shields.io/github/license/marcusnessemadland/mge)](https://bkaradzic.github.io/bgfx/license.html)
+[![License](https://img.shields.io/github/license/marcusnessemadland/mge)](https://github.com/marcusnessemadland/mge/blob/main/LICENSE)
 
 [What is it?](https://github.com/marcusnessemadland/mge)
 -------------------------------------------------------------
