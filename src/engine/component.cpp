@@ -3,9 +3,13 @@
  * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
-#include "mge_p.h"
+#include "engine/component.h"
 
 namespace mge
 {
-	
+	std::shared_ptr<Object> Component::getOwner()
+	{
+		return m_owner;
+	}
+
 } // namespace mge

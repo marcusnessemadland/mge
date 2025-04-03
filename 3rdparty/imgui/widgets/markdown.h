@@ -72,12 +72,12 @@ Links:
 #include <string>
 
 // You can make your own Markdown function with your prefered string container and markdown config.
-static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { NULL, true, NULL, true, NULL, false } };
+static ImGui::MarkdownConfig mdConfig{ LinkCallback, ICON_FA_LINK, { nullptr, true, nullptr, true, nullptr, false } };
 
 void LinkCallback( const char* link_, uint32_t linkLength_ )
 {
     std::string url( link_, linkLength_ );
-    ShellExecuteA( NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL );
+    ShellExecuteA( nullptr, "open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL );
 }
 
 void LoadFonts( float fontSize_ = 12.0f )
@@ -138,7 +138,7 @@ namespace ImGui
 
         MarkdownLinkCallback* linkCallback = 0;
         const char* linkIcon = "";
-        HeadingFormat headingFormats[ NUMHEADINGS ] = { { NULL, true }, { NULL, true }, { NULL, true } };
+        HeadingFormat headingFormats[ NUMHEADINGS ] = { { nullptr, true }, { nullptr, true }, { nullptr, true } };
     };
 
     // External interface

@@ -2,8 +2,8 @@
 
 #include "mge/mge.h"
 
-namespace vr
+namespace mge
 {
 
 
-} // namespace vr
+} // namespace mge

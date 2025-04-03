@@ -3,13 +3,13 @@
  * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
-#include "engine/entity.h"
+#include "engine/object.h"
 #include "engine/world.h"
 #include "engine/component.h"
 
-namespace vr
+namespace mge
 {
-    void Entity::preUpdate(double _dt)
+    void Object::preUpdate(double _dt)
     {
         for (auto& component : m_components)
         {
@@ -17,7 +17,7 @@ namespace vr
         }
     }
 
-    void Entity::postUpdate(double _dt)
+    void Object::postUpdate(double _dt)
     {
         for (auto& component : m_components)
         {
@@ -25,50 +25,50 @@ namespace vr
         }
     }
 
-    Entity::Entity()
+    Object::Object()
         : m_position(Vec3()) 
         , m_rotation(Quat()) // Identity
         , m_scale(Vec3(1.0f, 1.0f, 1.0f))
     {
     }
 
-    Entity::~Entity()
+    Object::~Object()
     {
     }
 
-    void Entity::setPosition(const Vec3& _position)
+    void Object::setPosition(const Vec3& _position)
     {
         m_position = _position;
     }
 
-    Vec3 Entity::getPosition() const
+    Vec3 Object::getPosition() const
     {
         return m_position;
     }
 
-    void Entity::setRotation(const Vec3& _euler)
+    void Object::setRotation(const Vec3& _euler)
     {
         m_rotation = quat_from_euler(_euler);
     }
 
-    void Entity::setRotation(const Quat& _rotation)
+    void Object::setRotation(const Quat& _rotation)
     {
         m_rotation = _rotation;
     }
 
-    Quat Entity::getRotation() const
+    Quat Object::getRotation() const
     {
         return m_rotation;
     }
 
-    void Entity::setScale(const Vec3& _scale)
+    void Object::setScale(const Vec3& _scale)
     {
         m_scale = _scale;
     }
 
-    Vec3 Entity::getScale() const
+    Vec3 Object::getScale() const
     {
         return m_scale;
     }
 
-} // namespace vr
+} // namespace mge

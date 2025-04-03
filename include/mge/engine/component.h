@@ -7,27 +7,27 @@
 
 #include <memory>
 
-namespace vr
+namespace mge
 {
-	class Entity;
-
+	/// Object Component.
+	///
 	class Component
 	{
-		friend class Entity;
+		friend class Object;
 
 	public:
+		/// Get the owner of this component.
 		/// 
-		std::shared_ptr<Entity> getOwner();
+		/// @returns Shared owner.
+		///
+		std::shared_ptr<Object> getOwner();
 
 	protected:
-		/// update that happens before entity update
 		virtual void preUpdate(double _dt) = 0;
-
-		/// update that happens after entity update
 		virtual void postUpdate(double _dt) = 0;
 
 	private:
-		std::shared_ptr<Entity> m_owner;
+		std::shared_ptr<Object> m_owner;
 	};
 
-} // namespace vr
+} // namespace mge

@@ -10,20 +10,28 @@
 
 #include <memory>
 
-namespace vr
+namespace mge
 {
 	class Window;
 	class Camera;
 
+	/// Camera Fly Component
+	/// 
 	class CameraFlyComponent : public Component
 	{
 	public:
 		CameraFlyComponent(std::shared_ptr<Camera> _camera);
 		~CameraFlyComponent();
 
+		/// Set current move input.
+		/// 
+		/// @param[in] _input The direction to move.
 		/// 
 		void setMoveInput(const Vec3& _input);
 
+		/// Set current look input.
+		/// 
+		/// @param[in] _input The direction to look.
 		/// 
 		void setLookInput(const Vec2& _input);
 
@@ -47,4 +55,4 @@ namespace vr
 		Vec3 m_smoothPosition;
 	};
 
-} // namespace vr
+} // namespace mge

@@ -5,13 +5,15 @@
 
 #pragma once
 
+#include "engine/renderer.h"
 #include "engine/window.h"
+#include "engine/sampledata.h"
 
 #include <bgfx/bgfx.h>
 
 #include <memory>
 
-namespace vr
+namespace mge
 {
 	class Window;
 
@@ -29,7 +31,10 @@ namespace vr
 		Imgui(bgfx::ViewId _view, std::shared_ptr<CommonResources> _common, std::shared_ptr<Window> _window);
 		~Imgui();
 
-		void render();
+		void render(std::shared_ptr<Renderer> _renderer);
+
+	public:
+		SampleData m_sd;
 
 	private:
 		bgfx::ViewId m_view;
@@ -43,4 +48,4 @@ namespace vr
 		uint8_t button;
 	};
 
-} // namespace vr
+} // namespace mge

@@ -3,22 +3,20 @@
  * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
-#include "engine/scene.h"
-#include "engine/entity.h"
+#include "engine/objects/scene.h"
+#include "engine/objects/model.h"
+#include "engine/components/mesh_component.h"
 #include "engine/mesh.h"
 #include "engine/material.h"
 #include "engine/texture.h"
 #include "engine/world.h"
 #include "engine/camera.h"
-#include "engine/entities/model.h"
-#include "engine/components/mesh_component.h"
 
-#include <cassert>
 #include <filesystem>
 
-namespace vr 
+namespace mge 
 {
-	void Scene::initBridge()
+	void MayaSession::begin(std::unordered_map<std::string, std::shared_ptr<Model>>& _models)
 	{
 		m_writeBuffer = std::make_unique<mb::SharedBuffer>();
 		m_writeBuffer->init("maya-bridge-write", sizeof(mb::SharedData));
@@ -31,31 +29,86 @@ namespace vr
 		m_readBuffer->read(&status, sizeof(uint32_t));
 		if (status != MAYABRIDGE_MESSAGE_RELOAD_SCENE)
 		{
-			m_models.clear();
+			_models.clear();
 
 			status = MAYABRIDGE_MESSAGE_RELOAD_SCENE;
 			m_readBuffer->write(&status, sizeof(uint32_t));
 		}
 	}
 
-	void Scene::shutdownBridge()
+	void MayaSession::update(std::unordered_map<std::string, std::shared_ptr<Model>>& _models)
 	{
-		if (isUsingBridge())
+		m_writeBuffer->read(&m_shared,
+			sizeof(mb::Camera) +
+			sizeof(uint32_t) + //numModels
+			sizeof(uint32_t)); //numMaterials
+
+		uint32_t status = UINT32_MAX;
+		m_readBuffer->read(&status, sizeof(uint32_t));
+
+		if (status == MAYABRIDGE_MESSAGE_NONE)
+		{
+			if (m_shared.numMaterials != 0 || m_shared.numModels != 0)
+			{
+				// Only read entire data if we have any materials or models queued.
+				m_writeBuffer->read(&m_shared, sizeof(mb::SharedData));
+			}
+
+			// Materials
+			for (uint32_t ii = 0; ii < m_shared.numMaterials; ++ii)
+			{
+				const mb::Material& material = m_shared.materials[ii];
+
+				auto it = m_materials.find(material.name);
+				if (it != m_materials.end())
+				{
+					//materialChanged(material);
+				}
+				else
+				{
+					materialAdded(_models, material);
+				}
+			}
+
+			// Models
+			for (uint32_t ii = 0; ii < m_shared.numModels; ++ii)
+			{
+				const mb::Model& model = m_shared.models[ii];
+
+				auto it = _models.find(model.name);
+				if (it != _models.end())
+				{
+					//modelChanged(model);
+				}
+				else
+				{
+					modelAdded(_models, model);
+				}
+			}
+
+			status = MAYABRIDGE_MESSAGE_RECEIVED;
+			m_readBuffer->write(&status, sizeof(uint32_t));
+		}
+	}
+
+	void MayaSession::end()
+	{
+		if (isValid())
 		{
 			m_writeBuffer->shutdown();
 			m_readBuffer->shutdown();
 		}
 	}
 
-	bool Scene::isUsingBridge()
+	bool MayaSession::isValid()
 	{
 		return m_writeBuffer && m_readBuffer;
 	}
 
-	void Scene::modelAdded(const mb::Model& _model)
+	void MayaSession::modelAdded(std::unordered_map<std::string, std::shared_ptr<Model>>& _models, const mb::Model& _model)
 	{
-		m_models[_model.name] = std::make_shared<Model>();
-		std::shared_ptr<Model>& model = m_models[_model.name];
+		_models[_model.name] = std::make_shared<Model>();
+		std::shared_ptr<Model>& model = _models[_model.name];
 
 		// Transform
 		model->setPosition(Vec3(
@@ -109,9 +162,9 @@ namespace vr
 		model->addMesh(createMesh(vertices, subMeshes));
 	}
 
-	void Scene::materialAdded(const mb::Material& _material)
+	void MayaSession::materialAdded(std::unordered_map<std::string, std::shared_ptr<Model>>& _models, const mb::Material& _material)
 	{
-		m_materials[_material.name] = std::make_shared<Material>(VR_MATERIAL_NONE);
+		m_materials[_material.name] = std::make_shared<Material>(MGE_MATERIAL_NONE);
 		std::shared_ptr<Material> material = m_materials[_material.name];
 
 		// Textures
@@ -139,6 +192,16 @@ namespace vr
 		material->setNormal(_material.normalScale);
 		material->setOcclusion(_material.occlusionStrength);
 		material->setEmissive(Vec3(_material.emissiveFactor[0], _material.emissiveFactor[1], _material.emissiveFactor[2]));
+	}
+
+	MayaSession::MayaSession(const char* _filepath)
+		: m_filepath(_filepath)
+	{
+	}
+
+	MayaSession::~MayaSession()
+	{
+		end();
 	}
 
 	void Scene::write(FILE* _file)
@@ -244,7 +307,7 @@ namespace vr
 				fread(indices.data(), numIndices * sizeof(uint32_t), 1, _file);
 
 				// Read material properties
-				std::shared_ptr<Material> material = std::make_shared<Material>(VR_MATERIAL_NONE);
+				std::shared_ptr<Material> material = std::make_shared<Material>(MGE_MATERIAL_NONE);
 				fread(&material->blend, sizeof(bool), 1, _file);
 				fread(&material->doubleSided, sizeof(bool), 1, _file);
 				fread(&material->baseColorFactor, sizeof(Vec3), 1, _file);
@@ -319,128 +382,91 @@ namespace vr
 		return str;
 	}
 
-	Scene::Scene(bool _usingMaya)
+	Scene::Scene()
 		: m_filepath(nullptr)
-		, m_writeBuffer(nullptr)
-		, m_readBuffer(nullptr)
 	{
-		if (_usingMaya)
-		{
-			initBridge();
-		}
 	}
 
-	Scene::Scene(const char* _filepath, bool _usingMaya)
+	Scene::Scene(const char* _filepath)
 		: m_filepath(_filepath)
-		, m_writeBuffer(nullptr)
-		, m_readBuffer(nullptr)
 	{
-		if (_usingMaya)
+		FILE* file = nullptr;
+		fopen_s(&file, _filepath, "rb");
+		if (file != nullptr)
 		{
-			initBridge();
-		}
-		else
-		{
-			FILE* file = nullptr;
-			fopen_s(&file, _filepath, "rb");
-			if (file != nullptr)
-			{
-				read(file);
-				fclose(file);
-			}
+			read(file);
+			fclose(file);
 		}
 	}
 
 	Scene::~Scene()
 	{
-		shutdownBridge();
+		endMayaSession();
 	}
 
 	void Scene::update(double _dt)
 	{
-		if (isUsingBridge())
+		if (isSessionValid())
 		{
-			m_writeBuffer->read(&m_shared, 
-				sizeof(mb::Camera) + 
-				sizeof(uint32_t) + //numModels
-				sizeof(uint32_t)); //numMaterials
-
-			uint32_t status = UINT32_MAX;
-			m_readBuffer->read(&status, sizeof(uint32_t));
-
-			if (status == MAYABRIDGE_MESSAGE_NONE)
-			{
-				if (m_shared.numMaterials != 0 || m_shared.numModels != 0)
-				{
-					// Only read entire data if we have any materials or models queued.
-					m_writeBuffer->read(&m_shared, sizeof(mb::SharedData));
-				}
-
-				// Materials
-				for (uint32_t ii = 0; ii < m_shared.numMaterials; ++ii)
-				{
-					const mb::Material& material = m_shared.materials[ii];
-
-					auto it = m_materials.find(material.name);
-					if (it != m_materials.end())
-					{
-						//materialChanged(material);
-					}
-					else
-					{
-						materialAdded(material);
-					}
-				}
-
-				// Models
-				for (uint32_t ii = 0; ii < m_shared.numModels; ++ii)
-				{
-					const mb::Model& model = m_shared.models[ii];
-
-					auto it = m_models.find(model.name);
-					if (it != m_models.end())
-					{
-						//modelChanged(model);
-					}
-					else
-					{
-						modelAdded(model);
-					}
-				}
-
-				status = MAYABRIDGE_MESSAGE_RECEIVED;
-				m_readBuffer->write(&status, sizeof(uint32_t));
-			}
-			else if (status == MAYABRIDGE_MESSAGE_SAVE_SCENE)
-			{
-				save();
-
-				status = MAYABRIDGE_MESSAGE_RECEIVED;
-				m_readBuffer->write(&status, sizeof(uint32_t));
-			}
+			m_mayaSession->update(m_models);
 		}
 	}
 
-	std::shared_ptr<Scene> createScene(std::shared_ptr<World> _world, bool _usingMaya)
+	std::shared_ptr<Scene> createScene(std::shared_ptr<World> _world)
 	{
-		return _world->makeEntity<Scene>(_usingMaya);
+		return _world->makeObject<Scene>();
 	}
 
-	std::shared_ptr<Scene> loadScene(std::shared_ptr<World> _world, const char* _filepath, bool _usingMaya)
+	std::shared_ptr<Scene> loadScene(std::shared_ptr<World> _world, const char* _filepath)
 	{
-		return _world->makeEntity<Scene>(_filepath, _usingMaya);
+		return _world->makeObject<Scene>(_filepath);
 	}
 
-	void Scene::save()
+	void Scene::save(const char* _filepath)
 	{
-		if (m_filepath != nullptr)
+		const char* filepath = nullptr;
+		if (_filepath)
+		{
+			filepath = _filepath;
+		}
+		else
+		{
+			filepath = m_filepath;
+		}
+
+		if (filepath)
 		{
 			FILE* file = nullptr;
-			fopen_s(&file, m_filepath, "wb");
-			assert(file != NULL);
+			fopen_s(&file, filepath, "wb");
 			write(file);
 			fclose(file);
 		}
 	}
 
-} // namespace vr
+	void Scene::beginMayaSession()
+	{
+		if (m_mayaSession = std::make_unique<MayaSession>(m_filepath))
+		{
+			m_mayaSession->begin(m_models);
+		}
+	}
+
+	void Scene::endMayaSession()
+	{
+		m_mayaSession->end();
+		m_mayaSession.release();
+	}
+
+	bool Scene::isSessionValid()
+	{
+		if (m_mayaSession)
+		{
+			return m_mayaSession->isValid();
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+
+} // namespace mge

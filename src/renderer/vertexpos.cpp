@@ -5,7 +5,7 @@
 
 #include "vertexpos.h"
 
-namespace vr
+namespace mge
 {
 	void VertexPos::init()
 	{
@@ -17,5 +17,5 @@ namespace vr
 
 	bgfx::VertexLayout VertexPos::ms_layout;
 
-} // namespace vr
+} // namespace mge
 

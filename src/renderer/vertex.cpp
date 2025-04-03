@@ -5,7 +5,7 @@
 
 #include "engine/vertex.h"
 
-namespace vr
+namespace mge
 {
 	void Vertex::init()
 	{
@@ -24,5 +24,5 @@ namespace vr
 
 	bgfx::VertexLayout Vertex::ms_layout;
 
-} // namespace vr
+} // namespace mge
 

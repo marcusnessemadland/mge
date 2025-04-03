@@ -5,11 +5,13 @@
 
 #pragma once
 
+#include "engine/sampledata.h"
+
 #include <bgfx/bgfx.h>
 
 #include <memory>
 
-namespace vr
+namespace mge
 {
     struct GBufferAttachment 
     {
@@ -52,12 +54,12 @@ namespace vr
 
 		void render(std::shared_ptr<World> _world);
 
+    public:
+        SampleData m_sd;
+
 	private:
 		bgfx::ViewId m_view;
         std::shared_ptr<CommonResources> m_common;
-
-        bool multipleScatteringEnabled = true;
-        bool whiteFurnaceEnabled = false;
 
         bgfx::FrameBufferHandle m_framebuffer;
 		bgfx::ProgramHandle m_program;
@@ -76,4 +78,4 @@ namespace vr
         bgfx::UniformHandle m_emissiveSampler;
 	};
 
-} // namespace vr
+} // namespace mge

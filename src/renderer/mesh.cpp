@@ -4,12 +4,8 @@
  */
 
 #include "engine/mesh.h"
-#include "engine/material.h"
 
-#include <cassert>
-#include <unordered_map>
-
-namespace vr
+namespace mge
 {
 	SubMesh::SubMesh(const std::vector<uint32_t>& _indices, std::shared_ptr<Material> _material)
 		: m_indices(_indices), m_material(_material)
@@ -80,8 +76,7 @@ namespace vr
 
 	void Mesh::setMaterial(std::shared_ptr<Material> _material, uint32_t _idx)
 	{
-		assert(_idx < m_submeshes.size());
 		m_submeshes[_idx]->setMaterial(_material);
 	}
 
-} // namespace vr
+} // namespace mge

@@ -3,11 +3,17 @@
  * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
-#include "../renderer/imgui.h"
-#include "../renderer/imgui/imgui.h"
-#include "engine/window.h"
+#include "imgui.h"
+#include "imgui/imgui.h"
 
-namespace vr
+#include "engine/window.h"
+#include "engine/settings.h"
+
+#include "common_resources.h"
+#include "gbuffer.h"
+#include "tonemapping.h"
+
+namespace mge
 {
 	void Imgui::keyDown(const SDL_Event& _event)
 	{
@@ -60,7 +66,9 @@ namespace vr
 		mouseY = (int32_t)_event.motion.y;
 	}
 
-	Imgui::Imgui(bgfx::ViewId _view, std::shared_ptr<CommonResources> _common, std::shared_ptr<Window> _window)
+	Imgui::Imgui(bgfx::ViewId _view,
+		std::shared_ptr<CommonResources> _common,
+		std::shared_ptr<Window> _window)
 		: m_view(_view)
 		, m_common(_common)
 		, m_window(_window)
@@ -72,27 +80,27 @@ namespace vr
 	{
 		imguiCreate();
 
-		_window->registerEvent(SDL_EVENT_KEY_DOWN, [this](const SDL_Event& event)
+		m_window->registerEvent(SDL_EVENT_KEY_DOWN, [this](const SDL_Event& event)
 		{
 			this->keyDown(event);
 		});
 
-		_window->registerEvent(SDL_EVENT_MOUSE_BUTTON_DOWN, [this](const SDL_Event& event)
+		m_window->registerEvent(SDL_EVENT_MOUSE_BUTTON_DOWN, [this](const SDL_Event& event)
 		{
 			this->mouseButtonDown(event);
 		});
 
-		_window->registerEvent(SDL_EVENT_MOUSE_BUTTON_UP, [this](const SDL_Event& event)
+		m_window->registerEvent(SDL_EVENT_MOUSE_BUTTON_UP, [this](const SDL_Event& event)
 		{
 			this->mouseButtonUp(event);
 		});
 
-		_window->registerEvent(SDL_EVENT_MOUSE_WHEEL, [this](const SDL_Event& event)
+		m_window->registerEvent(SDL_EVENT_MOUSE_WHEEL, [this](const SDL_Event& event)
 		{
 			this->mouseWheel(event);
 		});
 
-		_window->registerEvent(SDL_EVENT_MOUSE_MOTION, [this](const SDL_Event& event)
+		m_window->registerEvent(SDL_EVENT_MOUSE_MOTION, [this](const SDL_Event& event)
 		{
 			this->mouseMotion(event);
 		});
@@ -103,8 +111,12 @@ namespace vr
 		imguiDestroy();
 	}
 
-	void Imgui::render()
+	void Imgui::render(std::shared_ptr<Renderer> _renderer)
 	{
+		// Begin timer
+		m_sd.begin();
+
+		// Show imgui menu
 		if (m_show)
 		{
 			imguiBeginFrame(
@@ -117,9 +129,93 @@ namespace vr
 				-1,
 				m_view);
 
-			ImGui::ShowDemoWindow();
+			ImGui::SetNextWindowPos(ImVec2(10, 10));
+			ImGui::Begin("Modern Graphics Engine", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings);
+			{
+				Settings& settings = getSettings();
+
+				// Scene
+				if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					Settings::Scene& scene = settings.scene;
+					// display scene triangles vertex buffers etc
+					// display scene hiarchy? how many objects vs rendered objects
+					// instancing etc?
+				}
+
+				// Camera
+				if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					Settings::Camera& camera = settings.camera;
+					// camera settings, fov, speed, sensitivity, lag etc.
+				}
+
+				// Renderer Settings
+				if (ImGui::CollapsingHeader("Renderer"))
+				{
+					Settings::Renderer& renderer = settings.renderer;
+					ImGui::Checkbox("Enable Multiple Scattering", &renderer.multipleScatteringEnabled);
+					ImGui::Checkbox("Enable White Furnace", &renderer.whiteFurnaceEnabled);
+
+					// actual render system settings
+					// probe res, shadow map size, etc
+				}
+
+				// Profiling
+				if (ImGui::CollapsingHeader("Profiling", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					std::shared_ptr<GBuffer> gbuffer = _renderer->m_gbuffer;
+					if (ImGui::TreeNodeEx("GBuffer", ImGuiTreeNodeFlags_Leaf, "%-35s: %.2f ms",
+						"GBuffer", gbuffer->m_sd.getAverage()))
+					{
+						ImGui::TreePop();
+					}
+
+					std::shared_ptr<ToneMapping> tonemapping = _renderer->m_tonemapping;
+					if (ImGui::TreeNodeEx("Tone Mapping", ImGuiTreeNodeFlags_Leaf, "%-35s: %.2f ms",
+						"Tone Mapping", tonemapping->m_sd.getAverage()))
+					{
+						ImGui::TreePop();
+					}
+
+					ImGui::Separator();
+
+					if (ImGui::TreeNodeEx("Total", ImGuiTreeNodeFlags_Leaf, "%-35s: %.2f ms",
+						"Total", _renderer->m_sd.getAverage()))
+					{
+						ImGui::TreePop();
+					}
+
+					if (ImGui::TreeNodeEx("Total (with frame)", ImGuiTreeNodeFlags_Leaf, "%-35s: %.2f ms",
+						"Total (with frame)", _renderer->m_sdCpu.getAverage()))
+					{
+						ImGui::TreePop();
+					}
+				}
+
+				// Debugging
+				if (ImGui::CollapsingHeader("Debugging", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					Settings::Debugging& debugging = settings.debugging;
+
+					const char* debugOptions[] = {
+						"None",
+						"DiffuseRoughness",
+						"Normal",
+						"FresnelMetallic",
+						"EmissiveOcclusion",
+						"Depth"
+					};
+
+					ImGui::Combo("Buffer Debug Mode", reinterpret_cast<int*>(&debugging.buffer), debugOptions, IM_ARRAYSIZE(debugOptions));
+				}
+			}
+			ImGui::End();
 
 			imguiEndFrame();
 		}
+
+		// End timer
+		m_sd.pushSample(m_sd.end());
 	}
 }

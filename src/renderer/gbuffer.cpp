@@ -7,14 +7,15 @@
 #include "common_resources.h"
 #include "uniforms.h"
 
-#include "engine/entities/model.h"
+#include "engine/objects/model.h"
+#include "engine/objects/scene.h"
 #include "engine/components/mesh_component.h"
 #include "engine/world.h"
-#include "engine/scene.h"
 #include "engine/mesh.h"
 #include "engine/renderer.h"
 #include "engine/material.h"
 #include "engine/texture.h"
+#include "engine/settings.h"
 
 #include "shaders/deferred.h"
 
@@ -24,7 +25,7 @@
 #include <bx/bx.h>
 #include <bx/math.h>
 
-namespace vr
+namespace mge
 {
 	static const bgfx::EmbeddedShader s_embeddedShaders[] =
 	{
@@ -122,9 +123,11 @@ namespace vr
 
 		bgfx::setUniform(m_hasTexturesUniform, hasTexturesValues);
 
+		Settings::Renderer& settings = getSettings().renderer;
+
 		float multipleScatteringValues[4] = {
-			multipleScatteringEnabled ? 1.0f : 0.0f, 
-			whiteFurnaceEnabled ? 1.0f : 0.0f, 
+			settings.multipleScatteringEnabled ? 1.0f : 0.0f, 
+			settings.whiteFurnaceEnabled ? 1.0f : 0.0f, 
 			0.0f, 
 			0.0f
 		};
@@ -247,6 +250,9 @@ namespace vr
 
 	void GBuffer::render(std::shared_ptr<World> _world)
 	{
+		// Begin timer
+		m_sd.begin();
+
 		// Recreate gbuffer upon reset. 
 		if (m_common->firstFrame)
 		{
@@ -261,7 +267,7 @@ namespace vr
 		bgfx::setViewTransform(m_view, m_common->view, m_common->proj);
 
 		// Submit
-		for (auto& entity : _world->m_entities)
+		for (auto& entity : _world->m_objects)
 		{
 			if (std::shared_ptr<Scene> scene = std::dynamic_pointer_cast<Scene>(entity))
 			{
@@ -276,5 +282,8 @@ namespace vr
 				submit(model);
 			}
 		}
+
+		// End timer
+		m_sd.pushSample(m_sd.end());
 	}
 }

@@ -13,7 +13,7 @@
 #include <bx/math.h>
 #include <bx/readerwriter.h>
 
-namespace vr
+namespace mge
 {
 	struct BgfxCallback : bgfx::CallbackI
 	{
@@ -92,7 +92,7 @@ namespace vr
 namespace bx
 {
 	void mtxAdjugate(float* _result, const float* _a);
-	void mtxSRT(float* _result, const vr::Vec3& _pos, const vr::Quat& _rotation, const vr::Vec3& _scale);
+	void mtxSRT(float* _result, const mge::Vec3& _pos, const mge::Quat& _rotation, const mge::Vec3& _scale);
 }
 
 namespace bgfx

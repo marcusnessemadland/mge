@@ -11,7 +11,7 @@
 
 #include <stdint.h>
 
-namespace vr
+namespace mge
 {
 	/// 
 	class VertexPos
@@ -28,4 +28,4 @@ namespace vr
 		static bgfx::VertexLayout ms_layout;
 	};
 
-} // namespace vr
+} // namespace mge

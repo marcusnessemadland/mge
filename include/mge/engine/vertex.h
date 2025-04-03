@@ -11,17 +11,15 @@
 
 #include <stdint.h>
 
-namespace vr
+namespace mge
 {
-	/// 
-	class Vertex
+	/// Vertex data layout
+	///
+	struct Vertex
 	{
 		friend class Renderer;
 		friend class Mesh;
 
-		static void init();
-
-	public:
 		Vec3 position;
 		Vec3 normal;
 		Vec3 tangent;
@@ -32,7 +30,8 @@ namespace vr
 		uint8_t indices[4];
 
 	private:
+		static void init();
 		static bgfx::VertexLayout ms_layout;
 	};
 
-} // namespace vr
+} // namespace mge

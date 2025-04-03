@@ -6,67 +6,64 @@
 #pragma once
 
 #include <algorithm>
+#include <chrono>
 
-class SampleData
+namespace mge
 {
-public:
-	SampleData()
-	{
-		reset();
-	}
+	/// Sample data to keep track of statistics.
+	/// 
+    class SampleData
+    {
+    public:
+        SampleData();
 
-	void reset()
-	{
-		m_offset = 0;
-		memset(m_values, 0, sizeof(m_values));
+        /// Begins a timer.
+        ///
+        void begin();
 
-		m_min = 0.0f;
-		m_max = 0.0f;
-		m_avg = 0.0f;
-	}
+        /// Ends a timer.
+        ///
+        /// @remark This does not push value.
+        /// 
+        /// @returns How long it took from begin to end in milliseconds.
+        /// 
+        float end();
 
-	void pushSample(float value)
-	{
-		m_values[m_offset] = value;
-		m_offset = (m_offset + 1) % 100;
+        /// Resets the data to default.
+        ///
+        void reset();
 
-		float min = std::numeric_limits<float>::max();
-		float max = std::numeric_limits<float>::min();
-		float avg = 0.0f;
+        /// Push a sample value.
+        ///
+        /// @param[in] _value The value to store.
+        /// 
+        void pushSample(float _value);
 
-		for (uint32_t ii = 0; ii < 100; ++ii)
-		{
-			const float val = m_values[ii];
-			min = std::min(min, val);
-			max = std::max(max, val);
-			avg += val;
-		}
+        /// Get the minimum sample value in array.
+        ///
+        /// @returns Minimum value.
+        /// 
+        float getMin() const;
 
-		m_min = min;
-		m_max = max;
-		m_avg = avg / 100;
-	}
+        /// Get the maximum sample value in array.
+        ///
+        /// @returns Maximum value.
+        /// 
+        float getMax() const;
 
-	float getMin() const
-	{
-		return m_min;
-	}
+        /// Get the average sample value in the array.
+        ///
+        /// @returns Average value.
+        /// 
+        float getAverage() const;
 
-	float getMax() const
-	{
-		return m_max;
-	}
+    private:
+        std::chrono::high_resolution_clock::time_point timer;
+        int32_t m_offset;
+        float m_values[100];
+        float m_min;
+        float m_max;
+        float m_avg;
+    };
 
-	float getAverage() const
-	{
-		return m_avg;
-	}
-
-private:
-	int32_t m_offset;
-	float m_values[100];
-
-	float m_min;
-	float m_max;
-	float m_avg;
-};
+} // namespace mge

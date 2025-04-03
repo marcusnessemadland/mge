@@ -6,9 +6,7 @@
 #include "engine/camera.h"
 #include "engine/world.h"
 
-#include <bgfx/bgfx.h>
-
-namespace vr
+namespace mge
 {
 	Camera::Camera(Projection::Enum _mode)
 		: m_projMode(_mode)
@@ -19,6 +17,16 @@ namespace vr
 		, m_target(Vec3(0.0f, 0.0f, 0.0f))
 		, m_up(Vec3(0.0f, 1.0f, 0.0f))
 	{
+	}
+
+	std::shared_ptr<Camera> createCamera(std::shared_ptr<World> _world, Projection::Enum _mode)
+	{
+		return _world->makeCamera(_mode);
+	}
+
+	Projection::Enum Camera::getProjectionMode()
+	{
+		return m_projMode;
 	}
 
 	void Camera::setFOV(float _fov)
@@ -77,9 +85,4 @@ namespace vr
 		return m_up;
 	}
 
-	std::shared_ptr<Camera> createCamera(std::shared_ptr<World> _world, Projection::Enum _mode)
-	{
-		return _world->makeCamera(_mode);
-	}
-
-} // namespace vr
+} // namespace mge

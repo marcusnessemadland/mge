@@ -4,9 +4,10 @@
  */
 
 #include "engine/window.h"
-#include "mge.h"
 
-namespace vr
+#include "mge.h" // _main_
+
+namespace mge
 {
     Window::Window(const char* _title, uint32_t _width, uint32_t _height, SDL_WindowFlags _flags)
 		: quit(false)
@@ -34,6 +35,9 @@ namespace vr
     bool Window::isClosed()
     {
 		SDL_Event event;
+        SDL_Update update;
+
+        // Events
 		while (SDL_PollEvent(&event))
 		{
             if (event.type == SDL_EVENT_QUIT)
@@ -49,8 +53,7 @@ namespace vr
             }
 		}
 
-        SDL_Update update;
-
+        // Updates
         auto keyboard = updateEvents.find(SDL_UPDATE_KEYBOARD);
         if (keyboard != updateEvents.end())
         {
@@ -61,7 +64,6 @@ namespace vr
                 callback(update);
             }
         }
-
         auto mouse = updateEvents.find(SDL_UPDATE_MOUSE);
         if (mouse != updateEvents.end())
         {
@@ -84,14 +86,14 @@ namespace vr
         return quit;
     }
 
-    void Window::registerEvent(uint32_t eventType, EventCallback callback)
+    void Window::registerEvent(uint32_t _type, EventCallback _callback)
     {
-        pushEvents[eventType].push_back(callback);
+        pushEvents[_type].push_back(_callback);
     }
 
-    void Window::registerUpdate(uint32_t updateType, UpdateCallback callback)
+    void Window::registerUpdate(uint32_t _type, UpdateCallback _callback)
     {
-        updateEvents[updateType].push_back(callback);
+        updateEvents[_type].push_back(_callback);
     }
 
     void Window::setCursorVisible(bool _visible)
@@ -138,9 +140,9 @@ namespace vr
     void* Window::getNativeHandle()
     {
 #if defined(SDL_PLATFORM_WIN32)
-        return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+        return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
 #elif defined(SDL_PLATFORM_MACOS)
-        return (__bridge NSWindow*) SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+        return (__bridge NSWindow*) SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
 #elif defined(SDL_PLATFORM_LINUX)
         if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0)
         {
@@ -148,7 +150,7 @@ namespace vr
         }
         else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0)
         {
-            /*struct wl_surface *surface*/ return (struct wl_surface*)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+            /*struct wl_surface *surface*/ return (struct wl_surface*)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr);
         }
 #endif
     }
@@ -156,22 +158,22 @@ namespace vr
     void* Window::getNativeDisplayHandle()
     {
 #if defined(SDL_PLATFORM_WIN32)
-        return NULL;
+        return nullptr;
 #elif defined(SDL_PLATFORM_MACOS)
-        return NULL;
+        return nullptr;
 #elif defined(SDL_PLATFORM_LINUX)
         if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0)
         {
-            return (Display*)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+            return (Display*)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
         }
         else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0)
         {
-            /*struct wl_display *display*/ return (struct wl_display*)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+            /*struct wl_display *display*/ return (struct wl_display*)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
         }
 #endif
     }
 
-} // namespace vr
+} // namespace mge
 
 int main(int _argc, const char** _argv)
 {

@@ -5,33 +5,31 @@
 
 #pragma once
 
-#include "engine/math.h"
 #include "engine/sampledata.h"
 
 #include <bgfx/bgfx.h>
 
-#include <stdint.h>
 #include <memory>
-#include <vector>
 
-namespace vr
+namespace mge
 {
 	struct BgfxCallback;
+	struct CommonResources;
+
 	class Window;
 	class Camera;
-	class Model;
-	class World;
-
-	struct CommonResources;
 	class GBuffer;
-	class Imgui;
 	class ToneMapping;
+	class Imgui;
 
-	class Renderer
+	/// Renderer.
+	/// 
+	class Renderer : public std::enable_shared_from_this<Renderer>
 	{
 		friend class World;
-		friend class GBuffer;
-		friend class ToneMapping;
+		friend class Imgui;
+
+		void dbgTextPrintStats(const bgfx::Stats* _stats);
 
 		void update(std::shared_ptr<World> _world, std::shared_ptr<Camera> _camera);
 		void postUpdate();
@@ -41,22 +39,30 @@ namespace vr
 		Renderer(std::shared_ptr<Window> _window, bgfx::RendererType::Enum _type);
 		~Renderer();
 
+		/// Create the renderer.
+		/// 
+		/// @param[in] _window The window context to render to.
+		/// @param[in] _type The graphics API to use.
+		/// 
+		/// @returns Shared Renderer.
 		/// 
 		friend std::shared_ptr<Renderer> createRenderer(std::shared_ptr<Window> _window, bgfx::RendererType::Enum _type);
 
+	public:
+		SampleData m_sd;
+		SampleData m_sdCpu;
+		SampleData m_sdGpu;
+
 	private:
 		std::shared_ptr<Window> m_window;
+		std::shared_ptr<World> m_world;
+
+		std::unique_ptr<BgfxCallback> m_callback;
 
 		std::shared_ptr<CommonResources> m_common;
 		std::shared_ptr<GBuffer> m_gbuffer;
 		std::shared_ptr<ToneMapping> m_tonemapping;
 		std::shared_ptr<Imgui> m_imgui;
-
-		std::shared_ptr<World> m_world;
-		
-		std::unique_ptr<BgfxCallback> m_callback;
-
-		SampleData m_sdCpu;
-		SampleData m_sdGpu;
 	};
-}
+
+} // namespace mge

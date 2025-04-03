@@ -10,7 +10,7 @@
 #define VR_PIf 3.14159265358979323846f
 #define VR_LN2f 0.69314718056f
 
-namespace vr
+namespace mge
 {
     ///
     static inline float clampf(float x, float min, float max)
@@ -647,5 +647,5 @@ namespace vr
         return quat_from_cols(c0, c1, c2);
     }
 
-} // namespace vr
+} // namespace mge
 

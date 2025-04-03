@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <string>
 
-namespace vr
+namespace mge
 {
 	bx::Vec3 toBgfxVec(const Vec3& _v)
 	{
@@ -169,7 +169,7 @@ namespace vr
 		std::unordered_map<std::string, bgfx::TextureHandle> m_textures;
 	};
 
-} // namespace vr
+} // namespace mge
 
 namespace bx {
 
@@ -201,11 +201,11 @@ namespace bx {
 		mtxTranspose(_result, cof);
 	}
 
-	void mtxSRT(float* _result, const vr::Vec3& _pos, const vr::Quat& _rotation, const vr::Vec3& _scale)
+	void mtxSRT(float* _result, const mge::Vec3& _pos, const mge::Quat& _rotation, const mge::Vec3& _scale)
 	{
 		float scaleMtx[16], rotationMtx[16], translationMtx[16];
 		bx::mtxScale(scaleMtx, _scale.x, _scale.y, _scale.z);
-		bx::mtxFromQuaternion(rotationMtx, vr::toBgfxQuat(_rotation));
+		bx::mtxFromQuaternion(rotationMtx, mge::toBgfxQuat(_rotation));
 		bx::mtxTranslate(translationMtx, _pos.x, _pos.y, _pos.z);
 
 		float temp[16];
@@ -217,11 +217,11 @@ namespace bx {
 
 namespace bgfx
 {
-	static vr::Context* s_ctx = nullptr;
+	static mge::Context* s_ctx = nullptr;
 
 	void initBgfxUtils()
 	{
-		s_ctx = new vr::Context();
+		s_ctx = new mge::Context();
 	}
 
 	void shutdownBgfxUtils()

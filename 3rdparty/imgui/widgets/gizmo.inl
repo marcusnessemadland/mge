@@ -933,7 +933,7 @@ namespace IMGUIZMO_NAMESPACE
       ImGui::PushStyleColor(ImGuiCol_Border, 0);
       ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
-      ImGui::Begin("gizmo", NULL, flags);
+      ImGui::Begin("gizmo", nullptr, flags);
       gContext.mDrawList = ImGui::GetWindowDrawList();
       ImGui::End();
       ImGui::PopStyleVar();
@@ -947,7 +947,7 @@ namespace IMGUIZMO_NAMESPACE
 
    bool IsOver()
    {
-      return (Intersects(gContext.mOperation, TRANSLATE) && GetMoveType(gContext.mOperation, NULL) != MT_NONE) ||
+      return (Intersects(gContext.mOperation, TRANSLATE) && GetMoveType(gContext.mOperation, nullptr) != MT_NONE) ||
          (Intersects(gContext.mOperation, ROTATE) && GetRotateType(gContext.mOperation) != MT_NONE) ||
          (Intersects(gContext.mOperation, SCALE) && GetScaleType(gContext.mOperation) != MT_NONE) || IsUsing();
    }
@@ -966,7 +966,7 @@ namespace IMGUIZMO_NAMESPACE
       {
          return true;
       }
-      if(Intersects(op, TRANSLATE) && GetMoveType(op, NULL) != MT_NONE)
+      if(Intersects(op, TRANSLATE) && GetMoveType(op, nullptr) != MT_NONE)
       {
          return true;
       }

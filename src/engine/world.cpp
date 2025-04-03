@@ -3,17 +3,14 @@
  * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
-#include "engine/entities/model.h"
 #include "engine/world.h"
-#include "engine/entity.h"
 #include "engine/renderer.h"
-#include "engine/scene.h"
+#include "engine/objects/scene.h"
 
 #include <chrono>
-#include <cassert>
 
-namespace vr {
-
+namespace mge 
+{
 	World::World()
 		: m_world(nullptr)
 		, m_camera(nullptr)
@@ -31,21 +28,21 @@ namespace vr {
             m_world = shared_from_this();
         }
 
+        auto startTime = std::chrono::high_resolution_clock::now();
+
         static double lastTime = std::chrono::duration<double>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
         double currentTime = std::chrono::duration<double>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
         double frameMsCpu = (currentTime - lastTime) * 1000.0f;
+        m_sdTotal.pushSample(float(frameMsCpu));
+
         lastTime = currentTime;
         double dt = frameMsCpu * 0.001; 
 
-        m_sdTotal.pushSample(float(frameMsCpu));
-
-        auto startTime = std::chrono::high_resolution_clock::now();
-
-        for (uint32_t ii = 0; ii < m_entities.size(); ++ii)
+        for (uint32_t ii = 0; ii < m_objects.size(); ++ii)
         {
-            m_entities[ii]->preUpdate(dt);
-            m_entities[ii]->update(dt);
-            m_entities[ii]->postUpdate(dt);
+            m_objects[ii]->preUpdate(dt);
+            m_objects[ii]->update(dt);
+            m_objects[ii]->postUpdate(dt);
         }
 
         auto endTime = std::chrono::high_resolution_clock::now();
@@ -56,7 +53,6 @@ namespace vr {
 
 	void World::render(std::shared_ptr<Renderer> _renderer)
 	{
-		assert(m_camera != nullptr); 
 		_renderer->render(m_world, m_camera);
 	}
 
@@ -71,4 +67,4 @@ namespace vr {
 		return std::make_shared<World>();
 	}
 
-} // namespace vr
+} // namespace mge

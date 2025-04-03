@@ -62,10 +62,10 @@ namespace ImGui
 		{
 			Dock()
 				: id(0)
-				, label(NULL)
-				, next_tab(NULL)
-				, prev_tab(NULL)
-				, parent(NULL)
+				, label(nullptr)
+				, next_tab(nullptr)
+				, prev_tab(nullptr)
+				, parent(nullptr)
 				, pos(0, 0)
 				, size(-1, -1)
 				, active(true)
@@ -74,7 +74,7 @@ namespace ImGui
 				, first(true)
 			{
 				location[0] = 0;
-				children[0] = children[1] = NULL;
+				children[0] = children[1] = nullptr;
 			}
 
 			~Dock()
@@ -127,7 +127,7 @@ namespace ImGui
 
 			bool isContainer() const
 			{
-				return children[0] != NULL;
+				return children[0] != nullptr;
 			}
 
 			void setChildrenPosSize(const ImVec2& _pos, const ImVec2& _size)
@@ -220,7 +220,7 @@ namespace ImGui
 		EndAction_ m_end_action;
 
 		DockContext()
-			: m_current(NULL)
+			: m_current(nullptr)
 			, m_last_frame(0)
 		{
 		}
@@ -387,7 +387,7 @@ namespace ImGui
 				SetNextWindowSize(displaySize);
 			}
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
-			Begin("###DockPanel", NULL, flags);
+			Begin("###DockPanel", nullptr, flags);
 			splits();
 
 			checkNonexistent();
@@ -413,7 +413,7 @@ namespace ImGui
 				}
 			}
 
-			return NULL;
+			return nullptr;
 		}
 
 		static ImRect getDockedRect(const ImRect& rect, Slot_ dock_slot)
@@ -477,7 +477,7 @@ namespace ImGui
 					return m_docks[i];
 				}
 			}
-			return NULL;
+			return nullptr;
 		}
 
 		bool dockSlots(Dock& dock, Dock* dest_dock, const ImRect& rect, bool on_border)
@@ -511,7 +511,7 @@ namespace ImGui
 			Dock* dest_dock = getDockAt(GetIO().MousePos);
 
 			Begin("##Overlay",
-					NULL,
+					nullptr,
 					ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
 					ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
 					ImGuiWindowFlags_AlwaysAutoResize);
@@ -534,7 +534,7 @@ namespace ImGui
 					return;
 				}
 			}
-			if (dockSlots(dock, NULL, ImRect(ImVec2(0, 0), GetIO().DisplaySize), true))
+			if (dockSlots(dock, nullptr, ImRect(ImVec2(0, 0), GetIO().DisplaySize), true))
 			{
 				canvas->PopClipRect();
 				End();
@@ -605,12 +605,12 @@ namespace ImGui
 					{
 						if (container->children[0])
 						{
-							container->children[0]->setParent(NULL);
+							container->children[0]->setParent(nullptr);
 							container->children[0]->setPosSize(container->pos, container->size);
 						}
 						if (container->children[1])
 						{
-							container->children[1]->setParent(NULL);
+							container->children[1]->setParent(nullptr);
 							container->children[1]->setPosSize(container->pos, container->size);
 						}
 					}
@@ -628,8 +628,8 @@ namespace ImGui
 			}
 			if (dock.prev_tab) dock.prev_tab->next_tab = dock.next_tab;
 			if (dock.next_tab) dock.next_tab->prev_tab = dock.prev_tab;
-			dock.parent = NULL;
-			dock.prev_tab = dock.next_tab = NULL;
+			dock.parent = nullptr;
+			dock.prev_tab = dock.next_tab = nullptr;
 		}
 
 		void drawTabbarListButton(Dock& dock)
@@ -830,8 +830,8 @@ namespace ImGui
 				m_docks.push_back(container);
 				container->children[0] = &dest->getFirstTab();
 				container->children[1] = &dock;
-				container->next_tab = NULL;
-				container->prev_tab = NULL;
+				container->next_tab = nullptr;
+				container->prev_tab = nullptr;
 				container->parent = dest->parent;
 				container->size = dest->size;
 				container->pos = dest->pos;
@@ -912,7 +912,7 @@ namespace ImGui
 			Dock* tmp = getRootDock();
 			if (!tmp) return;
 
-			Dock* prev = NULL;
+			Dock* prev = nullptr;
 			char* c = dock.location + strlen(dock.location) - 1;
 			while (c >= dock.location && tmp)
 			{
@@ -989,7 +989,7 @@ namespace ImGui
 			PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
 			PushStyleColor(ImGuiCol_BorderShadow, ImVec4(0, 0, 0, 0));
 			float tabbar_height = GetTextLineHeightWithSpacing();
-			if (tabbar(dock.getFirstTab(), opened != NULL))
+			if (tabbar(dock.getFirstTab(), opened != nullptr))
 			{
 				fillLocation(dock);
 				*opened = false;
@@ -1027,7 +1027,7 @@ namespace ImGui
 				PopStyleColor();
 				PopStyleColor();
 			}
-			m_current = NULL;
+			m_current = nullptr;
 			if (m_end_action > EndAction_None) endPanel();
 		}
 
@@ -1046,11 +1046,11 @@ namespace ImGui
 
 		Dock* getDockByIndex(int idx)
 		{
-			return idx < 0 ? NULL : m_docks[(int)idx];
+			return idx < 0 ? nullptr : m_docks[(int)idx];
 		}
 	};
 
-	static DockContext* s_dock = NULL;
+	static DockContext* s_dock = nullptr;
 
 	IMGUI_API void InitDockContext()
 	{
@@ -1062,7 +1062,7 @@ namespace ImGui
 	{
 		s_dock->~DockContext();
 		ImGui::MemFree(s_dock);
-		s_dock = NULL;
+		s_dock = nullptr;
 	}
 
 	IMGUI_API void RootDock(const ImVec2& pos, const ImVec2& size)

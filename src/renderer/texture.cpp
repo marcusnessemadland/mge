@@ -7,7 +7,7 @@
 
 #include "bgfx_utils.h"
 
-namespace vr
+namespace mge
 {
     Texture::Texture(const char* _filePath)
         : m_filepath(_filePath)
@@ -18,7 +18,7 @@ namespace vr
     Texture::Texture()
         : m_th(BGFX_INVALID_HANDLE)
     {
-        // @todo
+        // @todo Implement...
     }
 
     Texture::~Texture()
@@ -46,4 +46,4 @@ namespace vr
         }
     }
 
-} // namespace vr
+} // namespace mge

@@ -4,9 +4,8 @@
  */
 
 #include "engine/material.h"
-#include "engine/texture.h"
 
-namespace vr
+namespace mge
 {
 	Material::Material(uint32_t _flags)
         : baseColorFactor(Vec3(1.0f, 1.0f, 1.0f))
@@ -15,12 +14,17 @@ namespace vr
         , normalScale(1.0f)
         , occlusionStrength(1.0f)
     {
-        blend = (_flags & VR_MATERIAL_BLEND) != 0;
-        doubleSided = (_flags & VR_MATERIAL_DOUBLE_SIDED) != 0;
+        blend = (_flags & MGE_MATERIAL_BLEND) != 0;
+        doubleSided = (_flags & MGE_MATERIAL_DOUBLE_SIDED) != 0;
     }
 
     Material::~Material()
     {
+    }
+
+    std::shared_ptr<Material> createMaterial(uint32_t _flags)
+    {
+        return std::make_shared<Material>(_flags);
     }
 
     void Material::setColor(std::shared_ptr<Texture> _baseColor)
@@ -83,9 +87,4 @@ namespace vr
         emissiveFactor = _emissive;
     }
 
-    std::shared_ptr<Material> createMaterial(uint32_t _flags)
-    {
-        return std::make_shared<Material>(_flags);
-    }
-
-} // namespace vr
+} // namespace mge

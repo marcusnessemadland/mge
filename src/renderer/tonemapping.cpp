@@ -9,13 +9,14 @@
 #include "vertexpos.h"
 
 #include "engine/renderer.h"
+#include "engine/settings.h"
 
 #include "shaders/tonemap.h"
 
 #include <bgfx/embedded_shader.h>
 #include <bx/bx.h>
 
-namespace vr
+namespace mge
 {
 	static const bgfx::EmbeddedShader s_embeddedShaders[] =
 	{
@@ -78,6 +79,9 @@ namespace vr
 
 	void ToneMapping::render()
 	{
+		// Begin timer
+		m_sd.begin();
+
 		if (m_common->firstFrame)
 		{
 			destroyScreenBuffer();
@@ -90,10 +94,22 @@ namespace vr
 		bgfx::setViewFrameBuffer(m_view, BGFX_INVALID_HANDLE);
 
 		// Submit
+		Settings::Debugging& settings = getSettings().debugging;
+
+		if (settings.buffer == Settings::Debugging::None)
+		{
+			bgfx::setTexture(0, m_sampler, bgfx::getTexture(m_gbuffer->m_framebuffer, 0));
+		}
+		else
+		{
+			bgfx::setTexture(0, m_sampler, bgfx::getTexture(m_gbuffer->m_framebuffer, uint8_t(settings.buffer) - 1));
+		}
+
 		bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_CULL_CW);
-		bgfx::setTexture(0, m_sampler, bgfx::getTexture(m_gbuffer->m_framebuffer, 0));
 		bgfx::setVertexBuffer(0, m_vbh);
-		
 		bgfx::submit(m_view, m_program);
+
+		// End timer
+		m_sd.pushSample(m_sd.end());
 	}
 }

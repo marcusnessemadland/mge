@@ -3,13 +3,15 @@
  * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
-#include "engine/component.h"
+#include "engine/settings.h"
 
-namespace vr
+namespace mge
 {
-	std::shared_ptr<Entity> Component::getOwner()
+	static Settings s_settings;
+
+	Settings& getSettings()
 	{
-		return m_owner;
+		return s_settings;
 	}
 
-} // namespace vr
+} // namespace mge

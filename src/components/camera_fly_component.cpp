@@ -7,7 +7,7 @@
 #include "engine/camera.h"
 #include "engine/window.h"
 
-namespace vr
+namespace mge
 {
 	CameraFlyComponent::CameraFlyComponent(std::shared_ptr<Camera> _camera)
 		: m_camera(_camera)
@@ -77,4 +77,4 @@ namespace vr
         m_lookInput = _input;
     }
 
-} // namespace vr
+} // namespace mge

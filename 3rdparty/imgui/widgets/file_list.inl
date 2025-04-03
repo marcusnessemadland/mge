@@ -20,11 +20,11 @@ namespace ImGui
 		BX_UNUSED(path);
 #else
 		DIR* dir = opendir(path);
-		if (NULL != dir)
+		if (nullptr != dir)
 		{
 			FileList.clear();
 
-			for (dirent* item = readdir(dir); NULL != item; item = readdir(dir) )
+			for (dirent* item = readdir(dir); nullptr != item; item = readdir(dir) )
 			{
 				if (0 == ImStricmp(item->d_name, "..") )
 				{

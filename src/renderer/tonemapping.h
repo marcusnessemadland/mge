@@ -5,11 +5,13 @@
 
 #pragma once
 
+#include "engine/sampledata.h"
+
 #include <bgfx/bgfx.h>
 
 #include <memory>
 
-namespace vr
+namespace mge
 {
     class Renderer;
 
@@ -27,6 +29,9 @@ namespace vr
 
         void render();
 
+    public:
+        SampleData m_sd;
+
     private:
         bgfx::ViewId m_view;
         std::shared_ptr<CommonResources> m_common;
@@ -37,4 +42,4 @@ namespace vr
         bgfx::VertexBufferHandle m_vbh;
     };
 
-} // namespace vr
+} // namespace mge

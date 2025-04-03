@@ -1,14 +1,14 @@
 namespace ImGui
 {
     ImString::ImString()
-        : Ptr(NULL)
+        : Ptr(nullptr)
     {
     }
 
     ImString::ImString(const ImString& rhs)
-        : Ptr(NULL)
+        : Ptr(nullptr)
     {
-        if (NULL != rhs.Ptr
+        if (nullptr != rhs.Ptr
         &&  0 != strcmp(rhs.Ptr, ""))
         {
             Ptr = ImStrdup(rhs.Ptr);
@@ -16,9 +16,9 @@ namespace ImGui
     }
 
     ImString::ImString(const char* rhs)
-        : Ptr(NULL)
+        : Ptr(nullptr)
     {
-        if (NULL != rhs
+        if (nullptr != rhs
         &&  0 != strcmp(rhs, ""))
         {
             Ptr = ImStrdup(rhs);
@@ -46,7 +46,7 @@ namespace ImGui
         {
             Clear();
 
-            if (NULL != rhs
+            if (nullptr != rhs
             &&  0 != strcmp(rhs, ""))
             {
                 Ptr = ImStrdup(rhs);
@@ -58,16 +58,16 @@ namespace ImGui
 
     void ImString::Clear()
     {
-        if (NULL != Ptr)
+        if (nullptr != Ptr)
         {
             MemFree(Ptr);
-            Ptr = NULL;
+            Ptr = nullptr;
         }
     }
 
     bool ImString::IsEmpty() const
     {
-        return NULL == Ptr;
+        return nullptr == Ptr;
     }
 } // namespace
 

@@ -33,7 +33,7 @@ namespace ImGui
 
         const char* CStr() const
         {
-            return NULL == Ptr ? "" : Ptr;
+            return nullptr == Ptr ? "" : Ptr;
         }
 
     private:

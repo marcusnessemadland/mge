@@ -5,7 +5,7 @@
 
 #pragma once
 
-namespace vr
+namespace mge
 {
 	struct CommonResources
 	{
@@ -27,5 +27,5 @@ namespace vr
 		uint16_t height;
 	};
 
-} // namespace vr
+} // namespace mge
 

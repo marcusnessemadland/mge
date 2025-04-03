@@ -9,25 +9,27 @@
 
 #include <memory>
 
-namespace vr
+namespace mge
 {
 	class Mesh;
 
+	/// Mesh Component
+	/// 
 	class MeshComponent : public Component
 	{
-		friend class GBuffer;
 		friend class Scene;
+		friend class GBuffer;
 
 	public:
-		MeshComponent(std::shared_ptr<Mesh> _mesh) : m_mesh(_mesh) {}
-		~MeshComponent() {}
+		MeshComponent(std::shared_ptr<Mesh> _mesh);
+		~MeshComponent();
 
 	protected:
-		void preUpdate(double _dt) override {}
-		void postUpdate(double _dt) override {}
+		void preUpdate(double _dt) override;
+		void postUpdate(double _dt) override;
 
 	private:
 		std::shared_ptr<Mesh> m_mesh;
 	};
 
-} // namespace vr
+} // namespace mge
