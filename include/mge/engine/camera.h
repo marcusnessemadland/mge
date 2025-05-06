@@ -11,8 +11,6 @@
 
 namespace mge
 {
-	class World;
-
 	/// Camera projection mode.
 	///
 	struct Projection
@@ -24,7 +22,8 @@ namespace mge
 		};
 	};
 
-	/// Camera data.
+	/// Camera data. 
+	/// @todo This could be turned into an object.
 	/// 
 	class Camera
 	{
@@ -38,7 +37,7 @@ namespace mge
 		/// 
 		/// @returns Shared Camera.
 		/// 
-		friend std::shared_ptr<Camera> createCamera(std::shared_ptr<World> _world, Projection::Enum _mode);
+		friend std::shared_ptr<Camera> createCamera(Projection::Enum _mode);
 
 		/// Get the projection mode of the camera.
 		/// 

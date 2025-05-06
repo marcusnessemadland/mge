@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "engine/math.h"
+
 namespace mge
 {
 	struct CommonResources
@@ -22,6 +24,7 @@ namespace mge
 
 		float view[16];
 		float proj[16];
+		Vec3 cameraDirection;
 
 		uint16_t width;
 		uint16_t height;

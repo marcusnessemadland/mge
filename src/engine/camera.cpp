@@ -19,9 +19,9 @@ namespace mge
 	{
 	}
 
-	std::shared_ptr<Camera> createCamera(std::shared_ptr<World> _world, Projection::Enum _mode)
+	std::shared_ptr<Camera> createCamera(Projection::Enum _mode)
 	{
-		return _world->makeCamera(_mode);
+		return std::make_shared<Camera>(_mode);
 	}
 
 	Projection::Enum Camera::getProjectionMode()

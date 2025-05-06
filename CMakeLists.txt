@@ -51,7 +51,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # 3rdparty (bgfx) STATIC
 option(BGFX_BUILD_TOOLS_GEOMETRY OFF)
-option(BGFX_BUILD_TOOLS_TEXTURE OFF)
 option(BGFX_BUILD_EXAMPLES OFF)
 option(BGFX_BUILD_EXAMPLE_COMMON OFF)
 set(BGFX_LIBRARY_TYPE "STATIC")
@@ -75,6 +74,8 @@ set_target_properties(spirv-cross PROPERTIES FOLDER "mge/3rdparty/bgfx/3rdparty"
 set_target_properties(spirv-opt PROPERTIES FOLDER "mge/3rdparty/bgfx/3rdparty")
 set_target_properties(bin2c PROPERTIES FOLDER "mge/3rdparty/bgfx/tools")
 set_target_properties(shaderc PROPERTIES FOLDER "mge/3rdparty/bgfx/tools")
+set_target_properties(texturec PROPERTIES FOLDER "mge/3rdparty/bgfx/tools")
+set_target_properties(texturev PROPERTIES FOLDER "mge/3rdparty/bgfx/tools")
 set_target_properties(tools PROPERTIES FOLDER "mge/3rdparty/bgfx/tools")
 set_target_properties(example-common PROPERTIES FOLDER "mge/3rdparty/bgfx/examples")
 set_target_properties(examples PROPERTIES FOLDER "mge/3rdparty/bgfx/examples")
@@ -115,20 +116,71 @@ include(CMakeParseArguments)
 include(${CMAKE_CURRENT_LIST_DIR}/3rdparty/bgfx/cmake/bgfx/util/ConfigureDebugging.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/bgfxToolUtils.cmake)
 
-# Shader (Deferred)
+# Shader (Shadowmap)
 bgfx_compile_shaders(
   TYPE VERTEX
-  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/vs_deferred.sc
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/vs_shadowmap.sc
   VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
-  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
   AS_HEADERS
 )
 
 bgfx_compile_shaders(
   TYPE FRAGMENT
-  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/fs_deferred.sc
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/fs_shadowmap.sc
   VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
-  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
+  AS_HEADERS
+)
+
+# Shader (Geometry)
+bgfx_compile_shaders(
+  TYPE VERTEX
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/vs_geometry.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
+  AS_HEADERS
+)
+
+bgfx_compile_shaders(
+  TYPE FRAGMENT
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/fs_geometry.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
+  AS_HEADERS
+)
+
+# Shader (Ambient Light)
+bgfx_compile_shaders(
+  TYPE VERTEX
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/vs_light_ambient.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
+  AS_HEADERS
+)
+
+bgfx_compile_shaders(
+  TYPE FRAGMENT
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/fs_light_ambient.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
+  AS_HEADERS
+)
+
+# Shader (Directinoal Light)
+bgfx_compile_shaders(
+  TYPE VERTEX
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/vs_light_directional.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
+  AS_HEADERS
+)
+
+bgfx_compile_shaders(
+  TYPE FRAGMENT
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/fs_light_directional.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
   AS_HEADERS
 )
 
@@ -137,7 +189,7 @@ bgfx_compile_shaders(
   TYPE VERTEX
   SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/vs_tonemap.sc
   VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
-  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
   AS_HEADERS
 )
 
@@ -145,7 +197,24 @@ bgfx_compile_shaders(
   TYPE FRAGMENT
   SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/fs_tonemap.sc
   VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
-  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
+  AS_HEADERS
+)
+
+# Shader (Skybox)
+bgfx_compile_shaders(
+  TYPE VERTEX
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/vs_skybox.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
+  AS_HEADERS
+)
+
+bgfx_compile_shaders(
+  TYPE FRAGMENT
+  SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/fs_skybox.sc
+  VARYING_DEF ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/varying.def.sc
+  OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/renderer/shaders/generated/
   AS_HEADERS
 )
 

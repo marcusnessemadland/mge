@@ -18,7 +18,9 @@ namespace mge
 
 	class Window;
 	class Camera;
+	class ShadowMapping;
 	class GBuffer;
+	class Skybox;
 	class ToneMapping;
 	class Imgui;
 
@@ -60,7 +62,9 @@ namespace mge
 		std::unique_ptr<BgfxCallback> m_callback;
 
 		std::shared_ptr<CommonResources> m_common;
+		std::shared_ptr<ShadowMapping> m_shadowmapping;
 		std::shared_ptr<GBuffer> m_gbuffer;
+		std::shared_ptr<Skybox> m_skybox;
 		std::shared_ptr<ToneMapping> m_tonemapping;
 		std::shared_ptr<Imgui> m_imgui;
 	};

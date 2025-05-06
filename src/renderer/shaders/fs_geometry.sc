@@ -1,9 +1,9 @@
 $input v_normal, v_tangent, v_texcoord0
 
-#define READ_MATERIAL
-
 #include "common/bgfx_shader.sh"
 #include "common/util.sh"
+
+#define READ_MATERIAL
 #include "common/pbr.sh"
 
 void main()

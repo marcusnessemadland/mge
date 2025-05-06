@@ -18,6 +18,7 @@ namespace mge
     {
         friend class Scene;
         friend class GBuffer;
+        friend class Skybox;
 
     public:
         Texture();

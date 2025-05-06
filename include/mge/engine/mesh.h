@@ -22,6 +22,7 @@ namespace mge
 	{
 		friend class Scene;
 		friend class GBuffer;
+		friend class ShadowMapping;
 
 	public:
 		SubMesh(const std::vector<uint32_t>& _indices, std::shared_ptr<Material> _material = nullptr);
@@ -54,6 +55,7 @@ namespace mge
 	{
 		friend class Scene;
 		friend class GBuffer;
+		friend class ShadowMapping;
 
 	public:
 		Mesh(const std::vector<Vertex>& _vertices, const std::vector<std::shared_ptr<SubMesh>>& _submeshes);

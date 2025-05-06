@@ -15,6 +15,7 @@
 
 #include "engine/camera.h"
 #include "engine/component.h"
+#include "engine/environment.h"
 #include "engine/object.h"
 #include "engine/material.h"
 #include "engine/math.h"

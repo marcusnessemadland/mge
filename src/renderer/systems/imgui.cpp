@@ -4,14 +4,17 @@
  */
 
 #include "imgui.h"
-#include "imgui/imgui.h"
+
+#include "../imgui/imgui.h"
+#include "../common_resources.h"
 
 #include "engine/window.h"
 #include "engine/settings.h"
 
-#include "common_resources.h"
+#include "shadow_mapping.h"
 #include "gbuffer.h"
-#include "tonemapping.h"
+#include "skybox.h"
+#include "tone_mapping.h"
 
 namespace mge
 {
@@ -154,9 +157,7 @@ namespace mge
 				if (ImGui::CollapsingHeader("Renderer"))
 				{
 					Settings::Renderer& renderer = settings.renderer;
-					ImGui::Checkbox("Enable Multiple Scattering", &renderer.multipleScatteringEnabled);
-					ImGui::Checkbox("Enable White Furnace", &renderer.whiteFurnaceEnabled);
-
+					
 					// actual render system settings
 					// probe res, shadow map size, etc
 				}
@@ -164,6 +165,13 @@ namespace mge
 				// Profiling
 				if (ImGui::CollapsingHeader("Profiling", ImGuiTreeNodeFlags_DefaultOpen))
 				{
+					std::shared_ptr<ShadowMapping> shadowmap = _renderer->m_shadowmapping;
+					if (ImGui::TreeNodeEx("Shadow Mapping", ImGuiTreeNodeFlags_Leaf, "%-35s: %.2f ms",
+						"Shadow Mapping", shadowmap->m_sd.getAverage()))
+					{
+						ImGui::TreePop();
+					}
+
 					std::shared_ptr<GBuffer> gbuffer = _renderer->m_gbuffer;
 					if (ImGui::TreeNodeEx("GBuffer", ImGuiTreeNodeFlags_Leaf, "%-35s: %.2f ms",
 						"GBuffer", gbuffer->m_sd.getAverage()))
@@ -171,9 +179,22 @@ namespace mge
 						ImGui::TreePop();
 					}
 
+					std::shared_ptr<Skybox> skybox = _renderer->m_skybox;
+					if (ImGui::TreeNodeEx("Skybox", ImGuiTreeNodeFlags_Leaf, "%-35s: %.2f ms",
+						"Skybox", skybox->m_sd.getAverage()))
+					{
+						ImGui::TreePop();
+					}
+
 					std::shared_ptr<ToneMapping> tonemapping = _renderer->m_tonemapping;
 					if (ImGui::TreeNodeEx("Tone Mapping", ImGuiTreeNodeFlags_Leaf, "%-35s: %.2f ms",
 						"Tone Mapping", tonemapping->m_sd.getAverage()))
+					{
+						ImGui::TreePop();
+					}
+
+					if (ImGui::TreeNodeEx("ImGui", ImGuiTreeNodeFlags_Leaf, "%-35s: %.2f ms",
+						"ImGui", m_sd.getAverage()))
 					{
 						ImGui::TreePop();
 					}

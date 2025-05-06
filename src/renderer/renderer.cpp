@@ -8,14 +8,18 @@
 #include "engine/material.h"
 #include "engine/vertex.h"
 #include "vertexpos.h"
+#include "vertexpostex.h"
 
 #include "mge.h"
 
 #include "bgfx_utils.h"
 #include "common_resources.h"
-#include "gbuffer.h"
-#include "tonemapping.h"
-#include "imgui.h"
+
+#include "systems/shadow_mapping.h"
+#include "systems/gbuffer.h"
+#include "systems/skybox.h"
+#include "systems/tone_mapping.h"
+#include "systems/imgui.h"
 
 namespace mge
 {
@@ -120,6 +124,8 @@ namespace mge
 					handedness
 				);
 			}
+
+			m_common->cameraDirection = normalize(_camera->getTarget() - _camera->getPosition());
 		}
 	}
 
@@ -142,9 +148,27 @@ namespace mge
 		m_sd.begin();
 
 		// Render
+		m_shadowmapping->render(_world);
 		m_gbuffer->render(_world);
 		m_tonemapping->render();
+		m_skybox->render(_world);
 		m_imgui->render(shared_from_this());
+
+		// @todo Renderer
+		// Skybox (Could consider a perez sky model first, then render that to a cubemap buffer for dynamic sky, but still optional to use a custom skybox)
+		// Forward Pass (for custom shader meshes (like water, hair, particles) and for transparent meshes)
+		// Cascaded Shadows Mapping (basically lods for shadow mapping)
+		// Basic IBL (using skybox as irradiance and specular until vxgi is developed)
+		// Basic BPR (Basic brdf model in deferred combine shader)
+		// (Big task, separate branch)VGXI for irradiance and specular (still use skybox as irradiance and specular for sky visibility)
+		// Make sure all buffers are HDR (For tonemapping and bloom works correctly.)
+		// Bloom (Works well with HDR and Foliage)
+		// Tone mapping (uncharted 2 -> tweak to make look good)
+		// Screen Space Ambient Occlusion (HBAO+ or ASSAO)
+
+		// @todo Scene
+		// Automatic Instancing (Instance duplicated meshes that use same material)
+		// Automatic Polygon Reduction (Optional runtime for testing and, precompute based on scale.)
 
 		// End timer
 		m_sd.pushSample(m_sd.end());
@@ -185,13 +209,16 @@ namespace mge
 		bgfx::init(init);
 
 		// Techniques
-		m_gbuffer = std::make_shared<GBuffer>(0, m_common);
-		m_tonemapping = std::make_shared<ToneMapping>(1, m_common, m_gbuffer);
+		m_shadowmapping = std::make_shared<ShadowMapping>(0, m_common);
+		m_gbuffer = std::make_shared<GBuffer>(1, m_common);
+		m_tonemapping = std::make_shared<ToneMapping>(2, m_common, m_gbuffer);
+		m_skybox = std::make_shared<Skybox>(3, m_common, m_gbuffer);
 		m_imgui = std::make_shared<Imgui>(255, m_common, m_window);
 
 		// Layouts
 		Vertex::init();
 		VertexPos::init();
+		VertexPosTex::init();
 
 		// Utils
 		bgfx::initBgfxUtils();
@@ -204,8 +231,10 @@ namespace mge
 
 		// Techniques
 		m_common.reset();
+		m_shadowmapping.reset();
 		m_gbuffer.reset();
 		m_tonemapping.reset();
+		m_skybox.reset();
 		m_imgui.reset();
 
 		// Shutdown

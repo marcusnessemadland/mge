@@ -4,8 +4,12 @@
  */
 
 #include "gbuffer.h"
-#include "common_resources.h"
-#include "uniforms.h"
+
+#include "../common_resources.h"
+#include "../samplers.h"
+#include "../bgfx_utils.h"
+
+#include "../shaders/geometry.h"
 
 #include "engine/objects/model.h"
 #include "engine/objects/scene.h"
@@ -17,10 +21,6 @@
 #include "engine/texture.h"
 #include "engine/settings.h"
 
-#include "shaders/deferred.h"
-
-#include "bgfx_utils.h"
-
 #include <bgfx/embedded_shader.h>
 #include <bx/bx.h>
 #include <bx/math.h>
@@ -29,8 +29,8 @@ namespace mge
 {
 	static const bgfx::EmbeddedShader s_embeddedShaders[] =
 	{
-		BGFX_EMBEDDED_SHADER(vs_deferred),
-		BGFX_EMBEDDED_SHADER(fs_deferred),
+		BGFX_EMBEDDED_SHADER(vs_geometry),
+		BGFX_EMBEDDED_SHADER(fs_geometry),
 
 		BGFX_EMBEDDED_SHADER_END()
 	};
@@ -40,15 +40,21 @@ namespace mge
 		const uint32_t width = m_common->width;
 		const uint32_t height = m_common->height;
 
+		const uint64_t flags = BGFX_SAMPLER_MIN_POINT |
+							   BGFX_SAMPLER_MAG_POINT |
+							   BGFX_SAMPLER_MIP_POINT |
+							   BGFX_SAMPLER_U_CLAMP |
+							   BGFX_SAMPLER_V_CLAMP;
+
 		// @todo D32F format might not be available at all platforms. 
-		// Consider a func 'findDepthFormat'
+		// Consider a func for 'getAvailableDepthFormat'
 		bgfx::TextureHandle textures[GBufferAttachment::Count] =
 		{
-			bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT),
-			bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RG16F, BGFX_TEXTURE_RT),
-			bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT),
-			bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT),
-			bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::D32F, BGFX_TEXTURE_RT)
+			bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | flags),
+			bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RG16F, BGFX_TEXTURE_RT | flags),
+			bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | flags),
+			bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | flags),
+			bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::D32F,  BGFX_TEXTURE_RT | flags)
 		};
 		m_framebuffer = bgfx::createFrameBuffer(GBufferAttachment::Count, textures, true);
 	}
@@ -66,8 +72,6 @@ namespace mge
 	{
 		// Normal matrix
 		// https://github.com/graphitemaster/normals_revisited#the-details-of-transforming-normals
-		// @todo Should add support in instancing data? Together with transform.
-
 		float identity[16];
 		bx::mtxIdentity(identity);
 
@@ -122,16 +126,6 @@ namespace mge
 		hasTexturesValues[0] = (float)hasTexturesMask;
 
 		bgfx::setUniform(m_hasTexturesUniform, hasTexturesValues);
-
-		Settings::Renderer& settings = getSettings().renderer;
-
-		float multipleScatteringValues[4] = {
-			settings.multipleScatteringEnabled ? 1.0f : 0.0f, 
-			settings.whiteFurnaceEnabled ? 1.0f : 0.0f, 
-			0.0f, 
-			0.0f
-		};
-		bgfx::setUniform(m_multipleScatteringUniform, multipleScatteringValues);
 	}
 
 	bool GBuffer::setTextureOrDefault(uint8_t stage, bgfx::UniformHandle uniform, std::shared_ptr<Texture> texture)
@@ -205,24 +199,28 @@ namespace mge
 
 		const bgfx::RendererType::Enum type = bgfx::getRendererType();
 
+		// Programs
 		m_program = bgfx::createProgram(
-			bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_deferred"),
-			bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_deferred"),
+			bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_geometry"),
+			bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_geometry"),
 			true
 		);
-		m_defaultTexture = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8);
-		m_normalMatrixUniform = bgfx::createUniform("u_normalMatrix", bgfx::UniformType::Mat3);
-		m_baseColorFactorUniform = bgfx::createUniform("u_baseColorFactor", bgfx::UniformType::Vec4);
+
+		// Uniforms
+		m_defaultTexture			  = bgfx::createTexture2D(1, 1, false, 1, bgfx::TextureFormat::RGBA8);
+		m_normalMatrixUniform         = bgfx::createUniform("u_normalMatrix", bgfx::UniformType::Mat3);
+		m_baseColorFactorUniform	  = bgfx::createUniform("u_baseColorFactor", bgfx::UniformType::Vec4);
 		m_metRoughNorOccFactorUniform = bgfx::createUniform("u_metallicRoughnessNormalOcclusionFactor", bgfx::UniformType::Vec4);
-		m_emissiveFactorUniform = bgfx::createUniform("u_emissiveFactorVec", bgfx::UniformType::Vec4);
-		m_hasTexturesUniform = bgfx::createUniform("u_hasTextures", bgfx::UniformType::Vec4);
-		m_multipleScatteringUniform = bgfx::createUniform("u_multipleScatteringVec", bgfx::UniformType::Vec4);
+		m_emissiveFactorUniform		  = bgfx::createUniform("u_emissiveFactorVec", bgfx::UniformType::Vec4);
+		m_hasTexturesUniform		  = bgfx::createUniform("u_hasTextures", bgfx::UniformType::Vec4);
+
+		// Samplers
 		m_baseColorSampler = bgfx::createUniform("s_texBaseColor", bgfx::UniformType::Sampler);
-		m_metallicSampler = bgfx::createUniform("s_texMetallic", bgfx::UniformType::Sampler);
+		m_metallicSampler  = bgfx::createUniform("s_texMetallic", bgfx::UniformType::Sampler);
 		m_roughnessSampler = bgfx::createUniform("s_texRoughness", bgfx::UniformType::Sampler);
-		m_normalSampler = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
+		m_normalSampler    = bgfx::createUniform("s_texNormal", bgfx::UniformType::Sampler);
 		m_occlusionSampler = bgfx::createUniform("s_texOcclusion", bgfx::UniformType::Sampler);
-		m_emissiveSampler = bgfx::createUniform("s_texEmissive", bgfx::UniformType::Sampler);
+		m_emissiveSampler  = bgfx::createUniform("s_texEmissive", bgfx::UniformType::Sampler);
 
 		// Don't create framebuffer until first render call.
 		m_framebuffer.idx = bgfx::kInvalidHandle;
@@ -238,7 +236,7 @@ namespace mge
 		bgfx::destroy(m_metRoughNorOccFactorUniform);
 		bgfx::destroy(m_emissiveFactorUniform);
 		bgfx::destroy(m_hasTexturesUniform);
-		bgfx::destroy(m_multipleScatteringUniform);
+
 		bgfx::destroy(m_baseColorSampler);
 		bgfx::destroy(m_metallicSampler);
 		bgfx::destroy(m_roughnessSampler);

@@ -3,15 +3,15 @@
  * License: https://github.com/marcusnessemadland/mge/blob/main/LICENSE
  */
 
-#include "tonemapping.h"
+#include "tone_mapping.h"
 #include "gbuffer.h"
-#include "common_resources.h"
-#include "vertexpos.h"
+
+#include "../common_resources.h"
+#include "../vertexpos.h"
+#include "../shaders/tonemap.h"
 
 #include "engine/renderer.h"
 #include "engine/settings.h"
-
-#include "shaders/tonemap.h"
 
 #include <bgfx/embedded_shader.h>
 #include <bx/bx.h>

@@ -19,6 +19,7 @@ namespace mge
 	{
 		friend class Scene;
 		friend class GBuffer;
+		friend class ShadowMapping;
 
 	public:
 		MeshComponent(std::shared_ptr<Mesh> _mesh);

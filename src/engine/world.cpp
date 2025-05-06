@@ -56,11 +56,20 @@ namespace mge
 		_renderer->render(m_world, m_camera);
 	}
 
-	std::shared_ptr<Camera> World::makeCamera(Projection::Enum _mode)
-	{
-		m_camera = std::make_shared<Camera>(_mode);
-		return m_camera;
-	}
+    void World::setCamera(std::shared_ptr<Camera> _camera)
+    {
+        m_camera = _camera;
+    }
+
+    void World::setEnvironment(std::shared_ptr<Texture> _cubemap, Environment::Enum _type)
+    {
+        m_environment[_type] = _cubemap;
+    }
+
+    void World::setDirectionalLight(const Vec3& _directionalLight)
+    {
+        m_directionalLight = _directionalLight;
+    }
 
 	std::shared_ptr<World> createWorld()
 	{

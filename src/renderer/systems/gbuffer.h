@@ -38,6 +38,8 @@ namespace mge
 
 	class GBuffer
 	{
+        friend class Skybox;
+        friend class Deferred;
         friend class ToneMapping;
 
         void createFramebuffer();
@@ -69,7 +71,6 @@ namespace mge
         bgfx::UniformHandle m_metRoughNorOccFactorUniform;
         bgfx::UniformHandle m_emissiveFactorUniform;
         bgfx::UniformHandle m_hasTexturesUniform;
-        bgfx::UniformHandle m_multipleScatteringUniform;
         bgfx::UniformHandle m_baseColorSampler;
         bgfx::UniformHandle m_metallicSampler;
         bgfx::UniformHandle m_roughnessSampler;

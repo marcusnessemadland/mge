@@ -54,6 +54,7 @@ namespace mge
 	class Scene : public Object
 	{
 		friend class GBuffer;
+		friend class ShadowMapping;
 
 		void write(FILE* _file);
 		void read(FILE* _file);

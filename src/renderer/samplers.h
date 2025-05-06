@@ -25,5 +25,8 @@ struct Samplers
         DeferredFresnelMetallic = 9,
         DeferredEmissiveOcclusion = 10,
         DeferredDepth = 11,
+
+        SkyboxCubemap = 12,
+
 	};
 };

@@ -14,16 +14,16 @@
 namespace mge
 {
 	/// 
-	class VertexPos
+	class VertexPosTex
 	{
 		friend class Renderer;
-		friend class Deferred;
-		friend class ToneMapping;
+		friend class Skybox;
 
 		static void init();
 
 	public:
 		Vec3 position;
+		Vec2 texcoord;
 
 	private:
 		static bgfx::VertexLayout ms_layout;

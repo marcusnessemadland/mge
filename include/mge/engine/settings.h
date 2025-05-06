@@ -7,6 +7,8 @@
 
 #include "engine/math.h"
 
+#include <stdint.h>
+
 namespace mge
 {
 	struct Settings
@@ -24,12 +26,11 @@ namespace mge
 		struct Renderer
 		{
 			Renderer()
-				: multipleScatteringEnabled(true)
-				, whiteFurnaceEnabled(true)
-			{}
+				: shadowMapRes(512)
+			{
+			}
 
-			bool multipleScatteringEnabled;
-			bool whiteFurnaceEnabled;
+			uint32_t shadowMapRes;
 
 		} renderer;
 

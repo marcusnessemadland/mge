@@ -19,8 +19,4 @@ cmake_install.cmake
 Makefile
 install*/
 cmake-build-*/
-src/renderer/shaders/spirv/
-src/renderer/shaders/glsl/
-src/renderer/shaders/dx11/
-src/renderer/shaders/essl/
-src/renderer/shaders/mtl/
+src/renderer/shaders/generated/
